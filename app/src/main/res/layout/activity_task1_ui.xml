@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".task1dataCollectUI">
+
+    <LinearLayout
+        android:layout_width="409dp"
+        android:layout_height="597dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:id="@+id/btAcc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="checkAcc"
+            android:text="Accelerator" />
+
+        <Button
+            android:id="@+id/btGyr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gyroscope" />
+
+        <Button
+            android:id="@+id/btMag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Magnetometer" />
+
+        <Button
+            android:id="@+id/btBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Barometer" />
+
+        <Button
+            android:id="@+id/btLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location Service" />
+
+        <Button
+            android:id="@+id/btWifi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="WiFi" />
+
+        <Button
+            android:id="@+id/btLight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Light sensor" />
+
+        <Button
+            android:id="@+id/btProx"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Proximity" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
