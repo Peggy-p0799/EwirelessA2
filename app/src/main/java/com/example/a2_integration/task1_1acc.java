@@ -19,7 +19,9 @@ public class task1_1acc extends AppCompatActivity implements SensorEventListener
 
     /************************** Class definition ***************************/
     //TextView
-    TextView txAccValue;
+    TextView tvAccValue;
+    TextView tvAccPower;
+    TextView tvAccRange;
 
     //GraphView and ViewPort
     GraphView accGraph;
@@ -36,6 +38,9 @@ public class task1_1acc extends AppCompatActivity implements SensorEventListener
     double accelerometerValues = 0;
     final float alpha = (float) 0.8;
     private float gravity [] = new float[3];
+
+    double accPower;
+    double accRange;
 
     int pointsPlotted = 5;
 
@@ -72,9 +77,18 @@ public class task1_1acc extends AppCompatActivity implements SensorEventListener
 
     private void plotAccelerator(){
 
+        //Display power state
+        accPower = aSensor.getPower();
+        tvAccPower=(TextView)findViewById(R.id.tvAccPower);
+        tvAccPower.setText(String.format("Power State: %.2f mA", accPower));
+
+        //Display Maximum range of acc
+        accRange = aSensor.getMaximumRange();
+        tvAccRange=(TextView)findViewById(R.id.tvAccRange);
+        tvAccRange.setText(String.format("Maximum Range: %.2f m/s^2", accRange));
         //Text display
-        txAccValue = (TextView) findViewById(R.id.txAccReading);
-        txAccValue.setText(String.format("Current accelerator reading: %.2f", accelerometerValues));
+        tvAccValue = (TextView) findViewById(R.id.txAccReading);
+        tvAccValue.setText(String.format("%.2f m/s^2", accelerometerValues));
 
 
         //Graph plot
