@@ -4,83 +4,45 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
     tools:context=".task1sensors">
 
-    <TextView
-        android:id="@+id/txAccReading"
-        android:layout_width="145dp"
-        android:layout_height="27dp"
-        android:layout_marginTop="68dp"
-        android:text="TextView"
-        android:textColor="@color/purple_500"
-        android:textSize="20sp"
-        android:textStyle="italic|bold"
-        android:gravity="center"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sensorRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="350dp"
+        android:orientation="horizontal"
+
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
     <com.jjoe64.graphview.GraphView
         android:id="@+id/accGraph"
         android:layout_width="match_parent"
-        android:layout_height="400dip"
-        android:layout_marginBottom="84dp"
+        android:layout_height="300dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/txAccName"
-        android:layout_width="145dp"
-        android:layout_height="32dp"
-        android:text="Accelerator"
-        android:textColor="@color/purple_500"
-        android:textSize="24sp"
-        android:textStyle="italic|bold"
-        android:gravity="center"
-        app:layout_constraintBottom_toTopOf="@+id/txAccReading"
+        android:id="@+id/tvLegend"
+        android:layout_width="96dp"
+        android:layout_height="18dp"
+        android:layout_marginEnd="10dp"
+        android:text="N/A"
+        android:textColor="@color/purple_700"
+        android:textSize="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/accGraph"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="406dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="112dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.4"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-
-        <TextView
-            android:id="@+id/tvAccPower"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TextView"
-            android:gravity="center"
-            android:textColor="@color/purple_500"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvAccRange"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TextView"
-            android:gravity="center"
-            android:textColor="@color/purple_500"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+        app:layout_constraintTop_toTopOf="@+id/accGraph"
+        app:layout_constraintVertical_bias="0.027" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
