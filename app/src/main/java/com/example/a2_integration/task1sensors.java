@@ -1,21 +1,24 @@
 package com.example.a2_integration;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-public class task1_1acc extends AppCompatActivity implements SensorEventListener {
+public class task1sensors extends Fragment implements SensorEventListener {
 
     /************************** Class definition ***************************/
     //TextView
@@ -52,6 +55,32 @@ public class task1_1acc extends AppCompatActivity implements SensorEventListener
             new DataPoint(4, 6)
     });
 
+    SensorsListener activitycommander;
+
+    public interface SensorsListener {
+        void SensorData(float sensor);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        activitycommander = (SensorsListener) activity;
+    }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_task1sensors, container, false);
+        // Defining
+        tvAccPower= view.findViewById(R.id.tvAccPower);
+        tvAccRange=view.findViewById(R.id.tvAccRange);
+        tvAccValue =view.findViewById(R.id.txAccReading);
+        accGraph =view.findViewById(R.id.accGraph);
+
+        return view;
+    }
+
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
 
@@ -71,6 +100,8 @@ public class task1_1acc extends AppCompatActivity implements SensorEventListener
 
             accelerometerValues = Math.sqrt(x*x+y*y+z*z);
 
+            activitycommander.SensorData((float)accelerometerValues);
+
             plotAccelerator();
         }
     }
@@ -79,20 +110,18 @@ public class task1_1acc extends AppCompatActivity implements SensorEventListener
 
         //Display power state
         accPower = aSensor.getPower();
-        tvAccPower=(TextView)findViewById(R.id.tvAccPower);
+
         tvAccPower.setText(String.format("Power State: %.2f mA", accPower));
+        tvAccRange.setText(String.format("Maximum Range: %.2f m/s^2", accRange));
 
         //Display Maximum range of acc
         accRange = aSensor.getMaximumRange();
-        tvAccRange=(TextView)findViewById(R.id.tvAccRange);
-        tvAccRange.setText(String.format("Maximum Range: %.2f m/s^2", accRange));
+
         //Text display
-        tvAccValue = (TextView) findViewById(R.id.txAccReading);
         tvAccValue.setText(String.format("%.2f m/s^2", accelerometerValues));
 
 
         //Graph plot
-        accGraph = (GraphView) findViewById(R.id.accGraph);
         accView = accGraph.getViewport();
         pointsPlotted++;
 
@@ -114,25 +143,25 @@ public class task1_1acc extends AppCompatActivity implements SensorEventListener
     }
 
     @Override
-    protected void onResume(){
+    public void onResume(){
         super. onResume();
         mSensorManager.registerListener(this, aSensor, 10000); // 100 samples/sec
         //Register the sensor when user returns to the activity
     }
 
     @Override
-    protected void onPause(){
+    public void onPause(){
         //Disable all sensors
         super.onPause();
         mSensorManager.unregisterListener(this);
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_task11acc);
+        //setContentView(R.layout.fragment_task1sensors);
 
-        mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        mSensorManager = (SensorManager)getActivity().getSystemService(Context.SENSOR_SERVICE);
         aSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
 

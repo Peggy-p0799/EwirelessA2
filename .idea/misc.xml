@@ -6,6 +6,12 @@
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_main.xml" value="0.3333333333333333" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_task11acc.xml" value="0.603125" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_task1_ui.xml" value="0.4466666666666667" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/layout/activity_task11acc.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/layout/activity_task1_ui.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/layout/fragment_task2pdr.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/layout/fragment_task3api.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/menu/navigation_menu.xml" value="0.31927083333333334" />
       </map>
     </option>
   </component>

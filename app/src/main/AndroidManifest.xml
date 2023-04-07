@@ -10,16 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.A2_Integration">
         <activity
-            android:name=".task1_1acc"
+            android:name=".task1sensors"
             android:exported="false" />
         <activity
-            android:name=".task3APIUI"
+            android:name=".task3api"
             android:exported="false" />
         <activity
-            android:name=".task2pdrUI"
-            android:exported="false" />
-        <activity
-            android:name=".task1dataCollectUI"
+            android:name=".task2pdr"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

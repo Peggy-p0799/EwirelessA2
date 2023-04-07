@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">A2_Integration</string>
+    <string name="app_name">Assignment2</string>
+    <!-- to toggle the open close button of the navigation drawer -->
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
