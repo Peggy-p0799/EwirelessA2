@@ -60,41 +60,21 @@ public class task1sensors extends Fragment implements SensorEventListener,
     LinearLayoutManager layoutManager;
     RecyclerView recyclerView;
 
+    //debug:
+    TextView tvTimeStamp;
+
 
 
     float accelerometerValues = 0;
     final float alpha = (float) 0.8;
     private float gravity [] = new float[3];
 
-    double accPower;
-    double accRange;
-    double accResolution;
-    double accMinDelay;
-
-    double magPower;
-    double magRange;
-    double magResolution;
-    double magMinDelay;
-
-    double gyrPower;
-    double gyrRange;
-    double gyrResolution;
-    double gyrMinDelay;
-
-    double barPower;
-    double barRange;
-    double barResolution;
-    double barMinDelay;
-
-    double prxPower;
-    double prxRange;
-    double prxResolution;
-    double prxMinDelay;
-
-    double lightPower;
-    double lightRange;
-    double lightResolution;
-    double lightMinDelay;
+    double accPower,accRange,accResolution,accMinDelay;
+    double magPower,magRange,magResolution,magMinDelay;
+    double gyrPower,gyrRange,gyrResolution,gyrMinDelay;
+    double barPower,barRange,barResolution,barMinDelay;
+    double prxPower,prxRange,prxResolution,prxMinDelay;
+    double lightPower,lightRange,lightResolution,lightMinDelay;
 
     float[] magneticFieldValues = new float[3];
     float magnetometerValue;
@@ -107,7 +87,11 @@ public class task1sensors extends Fragment implements SensorEventListener,
     int pointsPlotted = 5;
     int plotCode=99;
     boolean stopPlot=false;
-    //Command Variable
+    //Sensor timeStamp
+    long accTimestamp,magTimestamp,gyrTimestamp,barTimestamp,prxTimestamp,lightTimestamp;
+    double lastTimestamp=0;
+    double mLastXvalue=0;
+    boolean timeRecord=false;
 
 
     LineGraphSeries<DataPoint> accSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {
@@ -139,6 +123,12 @@ public class task1sensors extends Fragment implements SensorEventListener,
         Graph = (GraphView) view.findViewById(R.id.accGraph);
         legend = (TextView) view.findViewById(R.id.tvLegend);
         recyclerView = view.findViewById(R.id.sensorRecyclerView);
+        tvTimeStamp = (TextView)view.findViewById(R.id.tvtimestamp);
+
+        // set the color of the x-axis
+        Graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
+        Graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
+        accSeries.setColor(Color.parseColor("#FF6200EE"));
 
         if(recyclerView!=null){
             layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL,false);
@@ -161,86 +151,152 @@ public class task1sensors extends Fragment implements SensorEventListener,
             gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
 
             float x, y, z;
-
             x = sensorEvent.values[0]- gravity[0];
             y = sensorEvent.values[1] - gravity[1];
             z = sensorEvent.values[2] - gravity[2];
+            accTimestamp = sensorEvent.timestamp;
 
             accelerometerValues = (float) Math.sqrt(x*x+y*y+z*z);//-----------sensor data required.
 
+            // Start plotting and time framing if button is hit
+
             if(plotCode==0){
-                plotSensor(stopPlot,accelerometerValues, "-Accelerometer");
+                if(timeRecord){
+                    lastTimestamp=accTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot,accelerometerValues, accTimestamp,"-Accelerometer");
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
             magneticFieldValues = sensorEvent.values;
+            magTimestamp = sensorEvent.timestamp;
             magnetometerValue = (float) Math.sqrt(magneticFieldValues[0]*magneticFieldValues[0]
                     +magneticFieldValues[1]*magneticFieldValues[1]
                     +magneticFieldValues[2]*magneticFieldValues[2]); //-----------sensor data required.
+
+            // Start plotting and time framing if button is hit
+
             if(plotCode==1){
-                plotSensor(stopPlot,magnetometerValue,"-Magnetometer");
+                if(timeRecord){
+                    lastTimestamp=magTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot,magnetometerValue,magTimestamp,"-Magnetometer");
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE){
             gyroValues = sensorEvent.values;
+            gyrTimestamp = sensorEvent.timestamp;
             gyroIntValue =(float) Math.sqrt(gyroValues[0]*gyroValues[0]
                     +gyroValues[1]*gyroValues[1]
                     +gyroValues[2]*gyroValues[2]);//-----------sensor data required.
 
+            // Start plotting and time framing if button is hit
+
             if(plotCode==2){
-                plotSensor(stopPlot,gyroIntValue,"-Gyroscope");
+                if(timeRecord){
+                    lastTimestamp=gyrTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot,gyroIntValue,gyrTimestamp,"-Gyroscope");
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_PRESSURE){
             barValue = sensorEvent.values[0]; //-----------sensor data required.
+            barTimestamp = sensorEvent.timestamp;
+
+            // Start plotting and time framing if button is hit
+
             if(plotCode==3){
-                plotSensor(stopPlot,barValue,"-Barometer");
+                if(timeRecord){
+                    lastTimestamp=barTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot,barValue,barTimestamp,"-Barometer");
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
             lightValue = sensorEvent.values[0]; //-----------sensor data required.
+            lightTimestamp = sensorEvent.timestamp;
+
+            // Start plotting and time framing if button is hit
 
             if(plotCode==4){
-                plotSensor(stopPlot,lightValue,"-Light sensor");
+                if(timeRecord){
+                    lastTimestamp=lightTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot,lightValue,lightTimestamp,"-Light sensor");
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_PROXIMITY){
             prxValue = sensorEvent.values[0]; //-----------sensor data required.
+            prxTimestamp = sensorEvent.timestamp;
+
+            // Start plotting and time framing if button is hit
 
             if(plotCode==5){
-                plotSensor(stopPlot,prxValue,"-Proximity");
+                if(timeRecord){
+                    lastTimestamp=prxTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot,prxValue,prxTimestamp,"-Proximity");
             }
         }
     }
 
-    private void plotSensor(boolean stop,float sensorValue, String sensorLegend){
+    // Constants for sampling
+    private final int SENSOR_RATE = 100; // Hz
+    private final int TARGET_RATE = 20; // Hz
+    private final int SAMPLE_PERIOD_MS = 1000 / TARGET_RATE; // Milliseconds
 
+    // Variables for sampling
+    private float[] mSensorBuffer = new float[SENSOR_RATE / TARGET_RATE];
+    private int mSensorBufferIndex = 0;
+
+    private void plotSensor(boolean stop,float sensorValue, long timestamp,String sensorLegend){
+
+        //Time frame
+        double xValue = timestamp/1000000; //ms
+        double currentTimestamp = xValue-lastTimestamp;
 
         //Graph plot
         legend.setText(sensorLegend);
         View = Graph.getViewport();
-        pointsPlotted++;
 
-        if(pointsPlotted>800){
-            pointsPlotted = 1;
-            accSeries.resetData(new DataPoint[] {new DataPoint(1,0)});
+        // Add data to buffer
+        mSensorBuffer[mSensorBufferIndex++] = sensorValue;
+        if (mSensorBufferIndex == mSensorBuffer.length){
+            // Calculate average of buffer
+            float average = 0;
+            for (float value : mSensorBuffer) {
+                average += value;
+            }
+            average /= mSensorBuffer.length;
+            if(currentTimestamp-mLastXvalue>=SAMPLE_PERIOD_MS){
+                accSeries.appendData(new DataPoint(currentTimestamp, average), true, 100);
+                mLastXvalue=currentTimestamp;
+            }
+
+            //Reset buffer index
+            mSensorBufferIndex = 0;
         }
 
-        accSeries.appendData(new DataPoint(pointsPlotted, sensorValue), true, pointsPlotted);
+        tvTimeStamp.setText("Timestamp:"+currentTimestamp);
 
-        if(stopPlot){
+
+        if(stop){
             Graph.removeAllSeries();
             legend.setText("N/A");
+            currentTimestamp=0;
         }else{
             Graph.addSeries(accSeries);
         }
-        // set the color of the x-axis
-        Graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
-        Graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
-        accSeries.setColor(Color.parseColor("#FF6200EE"));
 
-        View.setMaxX(pointsPlotted);
-        View.setMinX(pointsPlotted-100);
+        View.setMaxX(currentTimestamp);
+        View.setMinX(currentTimestamp-2000);
+
     }
 
     @Override
@@ -252,9 +308,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
     public void onResume(){
         super. onResume();
         //sensorManager.registerListener(this, accelerometer, 60000); // 10000-100 samples/sec; 60000 - 20 samples/sec
-        sensorManager.registerListener(this, accelerometer, 60000);
-        sensorManager.registerListener(this, gyroscope, 60000);
-        sensorManager.registerListener(this, magnetometer, 60000);
+        sensorManager.registerListener(this, accelerometer, 10000);
+        sensorManager.registerListener(this, gyroscope, 10000);
+        sensorManager.registerListener(this, magnetometer, 10000);
         sensorManager.registerListener(this, barometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, ambientLightSensor, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -396,6 +452,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         Log.d(TAG, "Item clicked at position: " + position);
         plotCode = position;
         stopPlot = false;
+        timeRecord = true;
         Log.d(TAG, "onButton1Click: Start Plot Clicked!");
     }
 

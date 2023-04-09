@@ -38,11 +38,23 @@
         android:layout_height="18dp"
         android:layout_marginEnd="10dp"
         android:text="N/A"
-        android:textColor="@color/purple_700"
+        android:textColor="@color/purple_200"
         android:textSize="10dp"
         app:layout_constraintBottom_toBottomOf="@+id/accGraph"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/accGraph"
         app:layout_constraintVertical_bias="0.027" />
+
+    <TextView
+        android:id="@+id/tvtimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="29dp"
+        android:text="TextView"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.195"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sensorRecyclerView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
