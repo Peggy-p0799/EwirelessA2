@@ -5,12 +5,15 @@
 
     <item
         android:id="@+id/nav_compass"
-        android:title="Sensor View" />
+        android:title="Sensor View"
+        android:icon="@drawable/icons8_android_100"/>
     <item
         android:id="@+id/nav_pedometer"
-        android:title="PDR App" />
+        android:title="PDR App"
+        android:icon="@drawable/icons8_footstep_64"/>
     <item
         android:id="@+id/nav_settings"
-        android:title="Cloud App" />
+        android:title="Cloud App"
+        android:icon="@drawable/icons8_cloud_backup_restore_100"/>
 
 </menu>

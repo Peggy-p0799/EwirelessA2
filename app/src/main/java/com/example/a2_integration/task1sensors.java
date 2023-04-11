@@ -65,6 +65,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
     private final ArrayList<String> mSensorMinDelay = new ArrayList<>();
     private final ArrayList<String> mSensorPower = new ArrayList<>();
     private final ArrayList<String> mSensorRange = new ArrayList<>();
+    private final ArrayList<String> mbtPlot = new ArrayList<>();
+    private final ArrayList<String> mbtStop = new ArrayList<>();
+
 
     /************************** Class definition ***************************/
 
@@ -78,10 +81,14 @@ public class task1sensors extends Fragment implements SensorEventListener,
     //debug:
     TextView tvTimeStamp;
     TextView textGPS;
+    TextView xValues, yValue, zValue, AbsValue;
+    TextView proximity, lightsensor, elevation;
 
     //WIFI
     String wifis[];
     ListView lv;
+
+    String coord, coord2;
 
     float accelerometerValues = 0;
     final float alpha = (float) 0.8;
@@ -107,12 +114,13 @@ public class task1sensors extends Fragment implements SensorEventListener,
     float prxValue;
     int pointsPlotted = 5;
     int plotCode=99;
-    boolean stopPlot=false;
+    boolean stopPlot=true;
     //Sensor timeStamp
     long accTimestamp,magTimestamp,gyrTimestamp,barTimestamp,prxTimestamp,lightTimestamp,gravityTimestamp;
     double lastTimestamp=0;
     double mLastXvalue=0;
     boolean timeRecord=false;
+    boolean plotrunning=false;
 
 
     LineGraphSeries<DataPoint> accSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {
@@ -122,6 +130,28 @@ public class task1sensors extends Fragment implements SensorEventListener,
             new DataPoint(3, 2),
             new DataPoint(4, 6)
     });
+    LineGraphSeries<DataPoint> accSeriesx = new LineGraphSeries<DataPoint>(new DataPoint[] {
+            new DataPoint(0, 1),
+            new DataPoint(1, 5),
+            new DataPoint(2, 3),
+            new DataPoint(3, 2),
+            new DataPoint(4, 6)
+    });
+    LineGraphSeries<DataPoint> accSeriesy = new LineGraphSeries<DataPoint>(new DataPoint[] {
+            new DataPoint(0, 1),
+            new DataPoint(1, 5),
+            new DataPoint(2, 3),
+            new DataPoint(3, 2),
+            new DataPoint(4, 6)
+    });
+    LineGraphSeries<DataPoint> accSeriesz = new LineGraphSeries<DataPoint>(new DataPoint[] {
+            new DataPoint(0, 1),
+            new DataPoint(1, 5),
+            new DataPoint(2, 3),
+            new DataPoint(3, 2),
+            new DataPoint(4, 6)
+    });
+
 
     SensorsListener activitycommander;
 
@@ -248,13 +278,26 @@ public class task1sensors extends Fragment implements SensorEventListener,
         legend = (TextView) view.findViewById(R.id.tvLegend);
         recyclerView = view.findViewById(R.id.sensorRecyclerView);
         tvTimeStamp = (TextView)view.findViewById(R.id.tvtimestamp);
+        xValues = (TextView)view.findViewById(R.id.xValue);
+        yValue = (TextView)view.findViewById(R.id.yValue);
+        zValue = (TextView)view.findViewById(R.id.zValue);
+        AbsValue = (TextView)view.findViewById(R.id.AbsValue);
+        proximity = (TextView)view.findViewById(R.id.Proximity);
+        lightsensor = (TextView)view.findViewById(R.id.LightSensor);
+        elevation = (TextView)view.findViewById(R.id.Elevation);
 
         textGPS = (TextView) view.findViewById(R.id.tvGPS);
 
         // set the color of the x-axis
-        Graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
-        Graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
-        accSeries.setColor(Color.parseColor("#FF6200EE"));
+        Graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.BLACK);
+        Graph.getGridLabelRenderer().setVerticalLabelsColor(Color.BLACK);
+        accSeries.setColor(Color.parseColor("#3F51B5")); // blue
+        accSeriesx.setColor(Color.parseColor("#A02422")); // red
+        accSeriesy.setColor(Color.parseColor("#63AB62")); // green
+        accSeriesz.setColor(Color.parseColor("#DD7500")); // orange
+
+        //accSeries.setDrawDataPoints(true);
+        //accSeries.setDataPointsRadius(10);
 
         if(recyclerView!=null){
             layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL,false);
@@ -289,12 +332,13 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             // Start plotting and time framing if button is hit
 
-            if(plotCode==0){
+            if(plotCode==0 & stopPlot == false){
                 if(timeRecord){
                     lastTimestamp=accTimestamp/1000000;
                     timeRecord = false;
                 }
-                plotSensor(stopPlot,accelerometerValues, accTimestamp,"-Accelerometer");
+                plotSensor(stopPlot, accelerometerValues, x, y, z, accTimestamp, "Accelerometer");
+
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
@@ -306,12 +350,12 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             // Start plotting and time framing if button is hit
 
-            if(plotCode==1){
+            if(plotCode==1 & stopPlot == false){
                 if(timeRecord){
                     lastTimestamp=magTimestamp/1000000;
                     timeRecord = false;
                 }
-                plotSensor(stopPlot,magnetometerValue,magTimestamp,"-Magnetometer");
+                plotSensor(stopPlot,magnetometerValue,magneticFieldValues[0],magneticFieldValues[1],magneticFieldValues[2],magTimestamp,"Magnetometer");
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE){
@@ -323,12 +367,12 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             // Start plotting and time framing if button is hit
 
-            if(plotCode==2){
+            if(plotCode==2 & stopPlot == false){
                 if(timeRecord){
                     lastTimestamp=gyrTimestamp/1000000;
                     timeRecord = false;
                 }
-                plotSensor(stopPlot,gyroIntValue,gyrTimestamp,"-Gyroscope");
+                plotSensor(stopPlot,gyroIntValue,gyroValues[0],gyroValues[1],gyroValues[2],gyrTimestamp,"Gyroscope");
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_PRESSURE){
@@ -337,43 +381,14 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             // Start plotting and time framing if button is hit
 
-            if(plotCode==3){
+            if(plotCode==3 & stopPlot == false){
                 if(timeRecord){
                     lastTimestamp=barTimestamp/1000000;
                     timeRecord = false;
                 }
-                plotSensor(stopPlot,barValue,barTimestamp,"-Barometer");
+                plotSensor(stopPlot,barValue,0,0,0,barTimestamp,"Barometer");
             }
         }
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
-            lightValue = sensorEvent.values[0]; //-----------sensor data required.
-            lightTimestamp = sensorEvent.timestamp;
-
-            // Start plotting and time framing if button is hit
-
-            if(plotCode==4){
-                if(timeRecord){
-                    lastTimestamp=lightTimestamp/1000000;
-                    timeRecord = false;
-                }
-                plotSensor(stopPlot,lightValue,lightTimestamp,"-Light sensor");
-            }
-        }
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_PROXIMITY){
-            prxValue = sensorEvent.values[0]; //-----------sensor data required.
-            prxTimestamp = sensorEvent.timestamp;
-
-            // Start plotting and time framing if button is hit
-
-            if(plotCode==5){
-                if(timeRecord){
-                    lastTimestamp=prxTimestamp/1000000;
-                    timeRecord = false;
-                }
-                plotSensor(stopPlot,prxValue,prxTimestamp,"-Proximity");
-            }
-        }
-
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GRAVITY){
             gravityValues = sensorEvent.values;
             gravityTimestamp = sensorEvent.timestamp;
@@ -383,14 +398,42 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             // Start plotting and time framing if button is hit
 
-            if(plotCode==6){
+            if(plotCode==4 & stopPlot == false){
                 if(timeRecord){
                     lastTimestamp=gravityTimestamp/1000000;
                     timeRecord = false;
                 }
-                plotSensor(stopPlot,gravityValue,gravityTimestamp,"-Gravity");
+                plotSensor(stopPlot, gravityValue, gravityValues[0], gravityValues[1], gravityValues[2], gravityTimestamp, "Gravity");
+
             }
         }
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT) {
+            lightValue = sensorEvent.values[0]; //-----------sensor data required.
+            lightTimestamp = sensorEvent.timestamp;
+
+            double lightValue1 = (double)Math.round(lightValue * 10d) / 10d;
+            lightsensor.setText(lightValue1 + " lx");
+
+        }
+            // Start plotting and time framing if button is hit
+
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_PROXIMITY) {
+            prxValue = sensorEvent.values[0]; //-----------sensor data required.
+            prxTimestamp = sensorEvent.timestamp;
+
+            if(prxValue > 0) {
+                proximity.setText("Far");
+            }
+            else {
+                proximity.setText("Close");
+            }
+        }
+
+        if(plotCode==5 | plotCode==6){
+            Toast.makeText(getContext(), "This Sensor Cannot Be Plotted",Toast.LENGTH_LONG).show();
+            plotCode=7;
+        }
+
     }
 
     // Constants for sampling
@@ -402,33 +445,52 @@ public class task1sensors extends Fragment implements SensorEventListener,
     private float[] mSensorBuffer = new float[SENSOR_RATE / TARGET_RATE];
     private int mSensorBufferIndex = 0;
 
-    private void plotSensor(boolean stop,float sensorValue, long timestamp,String sensorLegend){
+    private void plotSensor(boolean stop,float sensorValue, float xcoord, float ycoord, float zcoord, long timestamp,String sensorLegend){
 
         //Time frame
         double xValue = timestamp/1000000; //ms
         double currentTimestamp = xValue-lastTimestamp;
-        int pointsPlotted=0;
 
         //Graph plot
         legend.setText(sensorLegend);
+        //Graph.setTitle(sensorLegend);
         View = Graph.getViewport();
 
         // Add data to buffer
-        mSensorBuffer[mSensorBufferIndex++] = sensorValue;
+        mSensorBuffer[mSensorBufferIndex] = sensorValue;
+        mSensorBufferIndex++;
 
         if (mSensorBufferIndex == mSensorBuffer.length){
             // Calculate average of buffer
-            float average = 0;
+            float average = 0, averagex = 0, averagey = 0, averagez = 0;
             for (float value : mSensorBuffer) {
                 average += value;
+                averagex += xcoord;
+                averagey += ycoord;
+                averagez += zcoord;
             }
             average /= mSensorBuffer.length;
+            averagex /= mSensorBuffer.length;
+            averagey /= mSensorBuffer.length;
+            averagez /= mSensorBuffer.length;
+
 
             if(currentTimestamp-mLastXvalue>=SAMPLE_PERIOD_MS){
-                pointsPlotted++;
                 accSeries.appendData(new DataPoint(currentTimestamp, average), true, 100);
+                accSeriesx.appendData(new DataPoint(currentTimestamp, averagex), true, 100);
+                accSeriesy.appendData(new DataPoint(currentTimestamp, averagey), true, 100);
+                accSeriesz.appendData(new DataPoint(currentTimestamp, averagez), true, 100);
+
                 mLastXvalue=currentTimestamp;
                 Graph.addSeries(accSeries);
+                Graph.addSeries(accSeriesx);
+                Graph.addSeries(accSeriesy);
+                Graph.addSeries(accSeriesz);
+
+                xValues.setText(Math.round(averagex * 10000d) / 10000d + "");
+                yValue.setText(Math.round(averagey * 10000d) / 10000d + "");
+                zValue.setText(Math.round(averagez * 10000d) / 10000d+ "");
+                AbsValue.setText(Math.round(average * 10000d) / 10000d + "");
             }
 
             //Reset buffer index
@@ -436,19 +498,46 @@ public class task1sensors extends Fragment implements SensorEventListener,
         }
 
         //debug line
-        tvTimeStamp.setText("Timestamp:"+currentTimestamp);
+        tvTimeStamp.setText(currentTimestamp/1000 + " s");
 
-        if(stop){
-            Graph.removeAllSeries();
-            legend.setText("N/A");
+
+        /*if(stop){
+            legend.setText("GraphView");
             currentTimestamp=0;
+            tvTimeStamp.setText(currentTimestamp/1000 + " s");
+            accSeries.resetData(new DataPoint[0]);
+            accSeriesx.resetData(new DataPoint[0]);
+            accSeriesy.resetData(new DataPoint[0]);
+            accSeriesz.resetData(new DataPoint[0]);
+            Graph.removeAllSeries();
+
+            xValues.setText("0.0");
+            yValue.setText("0.0");
+            zValue.setText("0.0");
+            AbsValue.setText("0.0");
+
+
             //Zero buffer
-            for (int i = 0; i < mSensorBuffer.length; i++) {
-                mSensorBuffer[i] = 0;
-            }
+            //for (int i = 0; i < mSensorBuffer.length; i++) {
+            //    mSensorBuffer[i] = 0;
+            //}
+            //mSensorBufferIndex = 0;
+            mLastXvalue = 0;
 
-        }else{
+        } */
 
+        if(currentTimestamp>30000) {
+            currentTimestamp=0;
+            tvTimeStamp.setText(currentTimestamp/1000 + " s");
+            accSeries.resetData(new DataPoint[0]);
+            accSeriesx.resetData(new DataPoint[0]);
+            accSeriesy.resetData(new DataPoint[0]);
+            accSeriesz.resetData(new DataPoint[0]);
+            Graph.removeAllSeries();
+
+            stopPlot = false;
+            timeRecord = true;
+            mLastXvalue = 0;
         }
 
         View.setMaxX(currentTimestamp);
@@ -507,7 +596,17 @@ public class task1sensors extends Fragment implements SensorEventListener,
                 if(location != null){
                     double tlat = location.getLatitude();
                     double tlong = location.getLongitude();
-                    textGPS.setText(Double.toString(tlat));
+                    double Elevation = location.getAltitude();
+                    tlat = (double)Math.round(tlat * 100000d) / 100000d;
+                    tlong = (double)Math.round(tlong * 100000d) / 100000d;
+                    Elevation = (double)Math.round(Elevation * 1000d) / 1000d;
+                    if (tlat >= 0) { coord = "N"; }
+                    else { coord = "S"; tlat = -tlat; }
+                    if (tlong >= 0) { coord2 = "E"; }
+                    else { coord2 = "W"; tlong = -tlong; }
+
+                    textGPS.setText(tlat + "°" + coord + ", " + tlong + "°" + coord2);
+                    elevation.setText(Elevation + " m");
                 }
             }
         };
@@ -533,7 +632,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
         getContext().registerReceiver(wifiScanReciever, new IntentFilter(wifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         wifiManager.startScan();
-        Toast.makeText(getContext(), "Scanning WIFI ...", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getContext(), "Scanning WIFI ...", Toast.LENGTH_SHORT).show();
 
         if(wifiManager.getWifiState()==wifiManager.WIFI_STATE_ENABLED) {
             wifiManager.getConnectionInfo().getSSID();
@@ -604,60 +703,61 @@ public class task1sensors extends Fragment implements SensorEventListener,
     private void initSensorCardView(){
         Log.d(TAG,"Sensor information gathering.");
 
-        int[] imageArray = {R.drawable.performance, R.drawable.magnet,
-                R.drawable.gyroscope,R.drawable.barometer,
-                R.drawable.lightbulb,R.drawable.radar,R.drawable.gravity};
+        int[] imageArray = {R.drawable.icons8_dashboard_100, R.drawable.icons8_magnetic_90,
+                R.drawable.icons8_gyroscope_100,R.drawable.icons8_barometer_64,R.drawable.icons8_gravity_66,
+                R.drawable.icons8_light_bulb_64,R.drawable.icons8_proximity_sensor_100};
 
 
         mImages.add(imageArray[0]);
-        mSensorNames.add("Accelerator");
-
-        mSensorResolution.add(String.format("Resolution= %.4f m/s^2", accResolution));
-        mSensorMinDelay.add(String.format("minDelay=%.2f ms", accMinDelay));
-        mSensorPower.add(String.format("Power=%.2f mA", accPower));
-        mSensorRange.add(String.format("maxRange= %.2f m/s^2", accRange));
+        mSensorNames.add("Accelerometer");
+        mSensorResolution.add(String.format("Resolution: %.4f m/s²", accResolution));
+        mSensorMinDelay.add(String.format("Min Delay: %.2f ms", accMinDelay));
+        mSensorPower.add(String.format("Power: %.2f mA", accPower));
+        mSensorRange.add(String.format("Max Range: %.2f m/s²", accRange));
 
         mImages.add(imageArray[1]);
         mSensorNames.add("Magnetometer");
-        mSensorResolution.add(String.format("Resolution= %.4f µT", magResolution));
-        mSensorMinDelay.add(String.format("minDelay=%.2f ms", magMinDelay));
-        mSensorPower.add(String.format("Power=%.2f mA", magPower));
-        mSensorRange.add(String.format("maxRange= %.2f µT", magRange));
+        mSensorResolution.add(String.format("Resolution: %.4f µT", magResolution));
+        mSensorMinDelay.add(String.format("Min Delay: %.2f ms", magMinDelay));
+        mSensorPower.add(String.format("Power: %.2f mA", magPower));
+        mSensorRange.add(String.format("Max Range: %.2f µT", magRange));
 
         mImages.add(imageArray[2]);
         mSensorNames.add("Gyroscope");
-        mSensorResolution.add(String.format("Resolution= %.4f rad/s", gyrResolution));
-        mSensorMinDelay.add(String.format("minDelay=%.2f ms", gyrMinDelay));
-        mSensorPower.add(String.format("Power=%.2f mA", gyrPower));
-        mSensorRange.add(String.format("maxRange= %.2f rad/s", gyrRange));
+        mSensorResolution.add(String.format("Resolution: %.4f rad/s", gyrResolution));
+        mSensorMinDelay.add(String.format("Min Delay: %.2f ms", gyrMinDelay));
+        mSensorPower.add(String.format("Power: %.2f mA", gyrPower));
+        mSensorRange.add(String.format("Max Range: %.2f rad/s", gyrRange));
 
         mImages.add(imageArray[3]);
         mSensorNames.add("Barometer");
-        mSensorResolution.add(String.format("Resolution= %.4f hPa", barResolution));
-        mSensorMinDelay.add(String.format("minDelay=%.2f ms", barMinDelay));
-        mSensorPower.add(String.format("Power=%.2f mA", barPower));
-        mSensorRange.add(String.format("maxRange= %.2f hPa", barRange));
+        mSensorResolution.add(String.format("Resolution: %.4f hPa", barResolution));
+        mSensorMinDelay.add(String.format("Min Delay: %.2f ms", barMinDelay));
+        mSensorPower.add(String.format("Power: %.2f mA", barPower));
+        mSensorRange.add(String.format("Max Range: %.2f hPa", barRange));
 
         mImages.add(imageArray[4]);
-        mSensorNames.add("Ambient Light Sensor");
-        mSensorResolution.add(String.format("Resolution= %.4f lx", lightResolution));
-        mSensorMinDelay.add(String.format("minDelay=%.2f ms", lightMinDelay));
-        mSensorPower.add(String.format("Power=%.2f mA", lightPower));
-        mSensorRange.add(String.format("maxRange= %.2f lx", lightRange));
+        mSensorNames.add("Gravity");
+        mSensorResolution.add(String.format("Resolution: %.4f cm", gravityResolution));
+        mSensorMinDelay.add(String.format("Min Delay: %.2f ms", gravityMinDelay));
+        mSensorPower.add(String.format("Power: %.2f mA", gravityPower));
+        mSensorRange.add(String.format("Max Range: %.2f cm", gravityRange));
 
         mImages.add(imageArray[5]);
-        mSensorNames.add("Proximity");
-        mSensorResolution.add(String.format("Resolution= %.4f cm", prxResolution));
-        mSensorMinDelay.add(String.format("minDelay=%.2f ms", prxMinDelay));
-        mSensorPower.add(String.format("Power=%.2f mA", prxPower));
-        mSensorRange.add(String.format("maxRange= %.2f cm", prxRange));
+        mSensorNames.add("Ambient Light Sensor");
+        mSensorResolution.add(String.format("Resolution: %.4f lx", lightResolution));
+        mSensorMinDelay.add(String.format("Min Delay: %.2f ms", lightMinDelay));
+        mSensorPower.add(String.format("Power: %.2f mA", lightPower));
+        mSensorRange.add(String.format("Max Range: %.2f lx", lightRange));
 
         mImages.add(imageArray[6]);
-        mSensorNames.add("Gravity");
-        mSensorResolution.add(String.format("Resolution= %.4f cm", gravityResolution));
-        mSensorMinDelay.add(String.format("minDelay=%.2f ms", gravityMinDelay));
-        mSensorPower.add(String.format("Power=%.2f mA", gravityPower));
-        mSensorRange.add(String.format("maxRange= %.2f cm", gravityRange));
+        mSensorNames.add("Proximity");
+        mSensorResolution.add(String.format("Resolution: %.4f cm", prxResolution));
+        mSensorMinDelay.add(String.format("Min Delay: %.2f ms", prxMinDelay));
+        mSensorPower.add(String.format("Power: %.2f mA", prxPower));
+        mSensorRange.add(String.format("Max Range: %.2f cm", prxRange));
+
+
 
         initRecyclerView();
     }
@@ -673,12 +773,50 @@ public class task1sensors extends Fragment implements SensorEventListener,
         stopPlot = false;
         timeRecord = true;
         Log.d(TAG, "onButton1Click: Start Plot Clicked!");
+
+        Graph.removeAllSeries();
+        accSeries.resetData(new DataPoint[0]);
+        accSeriesx.resetData(new DataPoint[0]);
+        accSeriesy.resetData(new DataPoint[0]);
+        accSeriesz.resetData(new DataPoint[0]);
+        xValues.setText("0.0");
+        yValue.setText("0.0");
+        zValue.setText("0.0");
+        AbsValue.setText("0.0");
+        //Zero buffer
+        for (int i = 0; i < mSensorBuffer.length; i++) {
+            mSensorBuffer[i] = 0;
+        }
+        mLastXvalue = 0;
     }
 
     @Override
     public void onButton2Click(int position) {
+        //plotCode = 99;
         stopPlot = true;
         Log.d(TAG, "onButton2Click: Stop Plot clicked!");
+        legend.setText("GraphView");
+        //currentTimestamp=0;
+        //tvTimeStamp.setText(currentTimestamp/1000 + " s");
+        accSeries.resetData(new DataPoint[0]);
+        accSeriesx.resetData(new DataPoint[0]);
+        accSeriesy.resetData(new DataPoint[0]);
+        accSeriesz.resetData(new DataPoint[0]);
+        Graph.removeAllSeries();
+
+        xValues.setText("0.0");
+        yValue.setText("0.0");
+        zValue.setText("0.0");
+        AbsValue.setText("0.0");
+
+        tvTimeStamp.setText("0.0 s");
+
+        //Zero buffer
+        //for (int i = 0; i < mSensorBuffer.length; i++) {
+        //    mSensorBuffer[i] = 0;
+        //}
+        //mSensorBufferIndex = 0;
+        mLastXvalue = 0;
     }
 
 }

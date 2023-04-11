@@ -3,17 +3,22 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/drawable-v24/background_gradient.xml" value="0.3574074074074074" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_main.xml" value="0.3333333333333333" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_task11acc.xml" value="0.603125" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_task1_ui.xml" value="0.4466666666666667" />
-        <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/fragment_task1sensors.xml" value="0.3425925925925926" />
-        <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/layout_sensorlist.xml" value="0.3425925925925926" />
+        <entry key="app/src/main/res/drawable-v24/background_gradient.xml" value="0.36614583333333334" />
+        <entry key="app/src/main/res/drawable/locationshape.xml" value="0.36614583333333334" />
+        <entry key="app/src/main/res/drawable/valuesshape.xml" value="0.36614583333333334" />
+        <entry key="app/src/main/res/drawable/valuesshape2.xml" value="0.36614583333333334" />
+        <entry key="app/src/main/res/drawable/valuesshape3.xml" value="0.36614583333333334" />
+        <entry key="app/src/main/res/drawable/valuesshape4.xml" value="0.36614583333333334" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.31927083333333334" />
         <entry key="app/src/main/res/layout/activity_task11acc.xml" value="0.31927083333333334" />
         <entry key="app/src/main/res/layout/activity_task1_ui.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/layout/fragment_task1sensors.xml" value="0.5832426550598476" />
         <entry key="app/src/main/res/layout/fragment_task2pdr.xml" value="0.31927083333333334" />
         <entry key="app/src/main/res/layout/fragment_task3api.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/layout/layout_sensorlist.xml" value="0.67" />
         <entry key="app/src/main/res/menu/navigation_menu.xml" value="0.31927083333333334" />
       </map>
     </option>
