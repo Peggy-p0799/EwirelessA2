@@ -126,13 +126,13 @@ public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecycl
             btPlot.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startPlotListener.onButton1Click(getAbsoluteAdapterPosition());
+                    startPlotListener.onButton1Click(getAdapterPosition());
                 }
             });
             btStop.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    stopPlotListener.onButton2Click(getAbsoluteAdapterPosition());
+                    stopPlotListener.onButton2Click(getAdapterPosition());
                 }
             });
         }

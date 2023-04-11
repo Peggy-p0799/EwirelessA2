@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
     protected void onCreate(Bundle savedInstanceState) {
 
         // This executes on creation of the app
-        setTitle("Assignment2"); // Title of this app is Compass+
+        setTitle("Assignment 2"); // Title of this app is Compass+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // Set view to activity_main.xml file
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
 
     private void handlingNavBar() {
 
-        getSupportActionBar().setTitle("Assignment2");
+        getSupportActionBar().setTitle("Sensor View App");
         // The drawer layout toggles menu icon to open drawer and back button to close drawer
         drawerLayout = findViewById(R.id.my_drawer_layout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
@@ -66,15 +66,15 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
             switch(item.getItemId()) {
                 case R.id.nav_compass:
                     currentfragment =  sensorsfragment; // switch to compass
-                    title = "Compass App";
+                    title = "Sensor View App";
                     break;
                 case R.id.nav_pedometer:
                     currentfragment = pdrfragment; // switch to pedometer
-                    title = "Pedometer App";
+                    title = "PDR App";
                     break;
                 case R.id.nav_settings:
                     currentfragment = apifragment; // switch to settings
-                    title = "Settings";
+                    title = "Cloud API App";
                 default:
                     break;
             }
