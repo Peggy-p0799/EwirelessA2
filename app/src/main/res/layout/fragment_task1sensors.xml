@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_background"
+    android:background="@color/backgroundWhite"
     tools:context=".task1sensors">
 
     <ImageView
@@ -49,7 +49,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Coordinates"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView"
@@ -63,7 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="8dp"
-        android:src="@drawable/valuesshape"
+        android:src="@drawable/valuesshape7"
         app:layout_constraintBottom_toTopOf="@+id/imageView5"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -71,7 +71,7 @@
         android:id="@+id/imageView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/valuesshape2"
+        android:src="@drawable/valuesshape8"
         app:layout_constraintBottom_toBottomOf="@+id/imageView2"
         app:layout_constraintEnd_toStartOf="@+id/imageView6"
         app:layout_constraintStart_toEndOf="@+id/imageView2" />
@@ -89,7 +89,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:src="@drawable/valuesshape3"
+        android:src="@drawable/valuesshape4"
         app:layout_constraintBottom_toTopOf="@+id/accGraph"
         app:layout_constraintStart_toStartOf="@+id/imageView2" />
 
@@ -98,7 +98,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:src="@drawable/valuesshape2"
+        android:src="@drawable/valuesshape3"
         app:layout_constraintBottom_toBottomOf="@+id/imageView3"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -106,7 +106,7 @@
         android:id="@+id/imageView6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/valuesshape4"
+        android:src="@drawable/valuesshape9"
         app:layout_constraintBottom_toBottomOf="@+id/imageView4"
         app:layout_constraintStart_toStartOf="@+id/imageView7" />
 
@@ -115,7 +115,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="GraphView"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView2"
@@ -129,7 +129,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="0.0 s"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView3"
@@ -192,7 +192,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="0.0"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView5"
@@ -205,7 +205,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="0.0"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView4"
@@ -218,7 +218,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="0.0"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView6"
@@ -231,7 +231,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="0.0"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView7"
@@ -253,7 +253,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:src="@drawable/valuesshape4"
+        android:src="@drawable/valuesshape2"
         app:layout_constraintStart_toStartOf="@+id/imageView"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
@@ -267,12 +267,12 @@
         app:layout_constraintStart_toStartOf="@+id/imageView15"
         app:layout_constraintTop_toTopOf="@+id/imageView15" />
 
-    <ImageView
+    e<ImageView
         android:id="@+id/imageView17"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:src="@drawable/valuesshape2"
+        android:src="@drawable/valuesshape6"
         app:layout_constraintBottom_toBottomOf="@+id/imageView18"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -280,7 +280,7 @@
         android:id="@+id/imageView18"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/valuesshape3"
+        android:src="@drawable/valuesshape5"
         app:layout_constraintBottom_toBottomOf="@+id/imageView15"
         app:layout_constraintEnd_toStartOf="@+id/imageView17"
         app:layout_constraintStart_toEndOf="@+id/imageView15" />
@@ -311,7 +311,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="0.0 lx"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView15"
@@ -324,7 +324,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="Proximity"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView18"
@@ -337,7 +337,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="Elevation"
-        android:textColor="@color/white"
+        android:textColor="@color/backgroundWhite"
         android:textSize="14dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView17"

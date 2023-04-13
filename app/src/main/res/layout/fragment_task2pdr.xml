@@ -4,6 +4,119 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/pdrbg"
     tools:context=".task2pdr">
+
+
+    <FrameLayout
+        android:id="@+id/frameLayout2"
+        android:layout_width="400dp"
+        android:layout_height="500dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1">
+
+
+        <ImageView
+            android:id="@+id/imageView22"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/nucleusg" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TIME"
+        android:textColor="@color/backgroundWhite"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.887" />
+
+    <LinearLayout
+        android:layout_width="100dp"
+        android:layout_height="105dp"
+        android:layout_marginStart="16dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
+        app:layout_constraintStart_toStartOf="@+id/frameLayout2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.641">
+
+
+        <ToggleButton
+            android:id="@+id/myToggleButton"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:background="@color/navyBlue"
+            android:fontFamily="sans-serif-black"
+            android:textColor="#FFEB3B"
+            android:textOff="Stop"
+            android:textOn="Start"
+            android:textSize="18sp" />
+
+
+        <Button
+            android:id="@+id/ibtReset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="@color/lightBlue"
+            android:fontFamily="sans-serif-black"
+            android:text="RESET"
+            android:textColor="@color/backgroundWhite"
+
+            android:textSize="18sp"
+            tools:ignore="TextContrastCheck" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="90dp"
+        android:layout_height="108dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
+        app:layout_constraintEnd_toEndOf="@+id/frameLayout2">
+
+
+
+
+        <Spinner
+            android:id="@+id/spnBuilding"
+            android:layout_width="90dp"
+            android:layout_height="48dp"
+            android:background="@color/deepGreen"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <Spinner
+            android:id="@+id/spnFloor"
+            android:layout_width="90dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="5dp"
+            android:background="@color/lightGreen"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imagCompass"
+        android:layout_width="117dp"
+        android:layout_height="103dp"
+        android:layout_marginBottom="4dp"
+        android:src="@drawable/compass"
+        app:layout_constraintBottom_toTopOf="@+id/textView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,6 +2,8 @@ package com.example.a2_integration;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,6 +32,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -287,14 +291,27 @@ public class task1sensors extends Fragment implements SensorEventListener,
         elevation = (TextView)view.findViewById(R.id.Elevation);
 
         textGPS = (TextView) view.findViewById(R.id.tvGPS);
-
+/*
+        ImageView btMenu = view.findViewById(R.id.btMenu);
+        btMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DrawerLayout drawerLayout = view.findViewById(R.id.my_drawer_layout);
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+            }
+        });
+*/
         // set the color of the x-axis
         Graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.BLACK);
         Graph.getGridLabelRenderer().setVerticalLabelsColor(Color.BLACK);
-        accSeries.setColor(Color.parseColor("#3F51B5")); // blue
-        accSeriesx.setColor(Color.parseColor("#A02422")); // red
-        accSeriesy.setColor(Color.parseColor("#63AB62")); // green
-        accSeriesz.setColor(Color.parseColor("#DD7500")); // orange
+        accSeries.setColor(Color.parseColor("#98473e")); // red
+        accSeriesx.setColor(Color.parseColor("#3a5541")); // green
+        accSeriesy.setColor(Color.parseColor("#a37c40")); // yellow
+        accSeriesz.setColor(Color.parseColor("#b49082")); // pink
 
         //accSeries.setDrawDataPoints(true);
         //accSeries.setDataPointsRadius(10);
@@ -586,6 +603,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         initSensorCardView();
 
     }
+
 
     public void initialisedManager(){
 

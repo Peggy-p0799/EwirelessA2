@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -45,9 +46,10 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
 
     private void handlingNavBar() {
 
-        getSupportActionBar().setTitle("Sensor View App");
+      //  getSupportActionBar().setTitle("Sensor View App");
         // The drawer layout toggles menu icon to open drawer and back button to close drawer
         drawerLayout = findViewById(R.id.my_drawer_layout);
+        drawerLayout.openDrawer(Gravity.LEFT);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
 
         // Passes the Open and Close toggle for the drawer layout listener to toggle the button state
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         actionBarDrawerToggle.syncState();
 
         // makes the Navigation drawer icon always appear on the action bar
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    //    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         NavigationView navigation = findViewById(R.id.navigation);
 
         // Listens for clicks of nav bar buttons
@@ -64,15 +66,15 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
             fragmentManager.beginTransaction().hide(currentfragment).commit();
             // switch statement to select between fragments
             switch(item.getItemId()) {
-                case R.id.nav_compass:
+                case R.id.nav_sensorList:
                     currentfragment =  sensorsfragment; // switch to compass
                     title = "Sensor View App";
                     break;
-                case R.id.nav_pedometer:
+                case R.id.nav_pdrNucleus:
                     currentfragment = pdrfragment; // switch to pedometer
                     title = "PDR App";
                     break;
-                case R.id.nav_settings:
+                case R.id.nav_cloud:
                     currentfragment = apifragment; // switch to settings
                     title = "Cloud API App";
                 default:
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
             }
             // Show the fragment that was just selected
             fragmentManager.beginTransaction().show(currentfragment).commit();
-            getSupportActionBar().setTitle(title); // sets title bar to fragment name
+          //  getSupportActionBar().setTitle(title); // sets title bar to fragment name
             drawerLayout.closeDrawer(GravityCompat.START); // close Navigation drawer
 
             return true;

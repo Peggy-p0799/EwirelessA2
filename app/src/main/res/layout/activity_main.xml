@@ -8,23 +8,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start"
     >
 
     <!-- Fragments can be inserted into this blank view -->
     <FrameLayout
         android:id="@+id/flContent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+    </FrameLayout>
 
     <!-- this is the navigation view which draws the navigation drawer -->
     <!-- here we include the menu navigation_menu.xml -->
     <com.google.android.material.navigation.NavigationView
+        android:background="@color/backgroundWhite"
         android:id="@+id/navigation"
+        app:headerLayout="@layout/header"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/navigation_menu" > <!-- menu file included -->
+        app:menu="@menu/navigation_menu"> <!-- menu file included -->
 
     </com.google.android.material.navigation.NavigationView>
 
