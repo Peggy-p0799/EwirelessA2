@@ -109,10 +109,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
     float[] magneticFieldValues = new float[3];
     float magnetometerValue;
     float[] gyroValues = new float[3];
-    float[] gravityValues = new float[3];
+    float gravityValues = 0;
 
     float gyroIntValue;
-    float gravityValue;
     float barValue;
     float lightValue;
     float prxValue;
@@ -263,7 +262,13 @@ public class task1sensors extends Fragment implements SensorEventListener,
     };
 
     public interface SensorsListener {
-        void SensorData(float sensor);
+        void LinearAccelerationData(float[] linearacceleration, long accTimestamp);
+        void GravityData(float[] gravity, long accTimestamp);
+        void GyroscopeData(float[] gyroValues, long gyrTimestamp);
+        void MagnetometerData(float[] magneticFieldValues, long magTimestamp);
+        void PressureData(float barValue, long barTimestamp);
+        void ProximityData(float prxValue, long prxTimestamp);
+        void AmbientLightData(float lightValue, long lightTimestamp);
     }
 
     @Override
@@ -339,13 +344,21 @@ public class task1sensors extends Fragment implements SensorEventListener,
             gravity[1] = alpha * gravity[1] + (1 - alpha) * sensorEvent.values[1];
             gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
 
-            float x, y, z;
-            x = sensorEvent.values[0]- gravity[0];
-            y = sensorEvent.values[1] - gravity[1];
-            z = sensorEvent.values[2] - gravity[2];
+
+            float[] linearAcceleration = new float[3];
+            linearAcceleration[0] = sensorEvent.values[0] - gravity[0];
+            linearAcceleration[1] = sensorEvent.values[1] - gravity[1];
+            linearAcceleration[2] = sensorEvent.values[2] - gravity[2];
+
+
+
             accTimestamp = sensorEvent.timestamp;
 
-            accelerometerValues = (float) Math.sqrt(x*x+y*y+z*z);//-----------sensor data required.
+            activitycommander.LinearAccelerationData(linearAcceleration, accTimestamp);
+            activitycommander.GravityData(gravity, accTimestamp);
+
+            accelerometerValues = (float) Math.sqrt(linearAcceleration[0]*linearAcceleration[0]+linearAcceleration[1]*linearAcceleration[1]+linearAcceleration[2]*linearAcceleration[2]);//-----------sensor data required.
+            gravityValues = (float) Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
 
             // Start plotting and time framing if button is hit
 
@@ -354,13 +367,24 @@ public class task1sensors extends Fragment implements SensorEventListener,
                     lastTimestamp=accTimestamp/1000000;
                     timeRecord = false;
                 }
-                plotSensor(stopPlot, accelerometerValues, x, y, z, accTimestamp, "Accelerometer");
+                plotSensor(stopPlot, accelerometerValues, linearAcceleration[0], linearAcceleration[1], linearAcceleration[2], accTimestamp, "Accelerometer");
+
+            }
+            if(plotCode==4 & stopPlot == false){
+                if(timeRecord){
+                    lastTimestamp=accTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot, gravityValues, gravity[0], gravity[1], gravity[2], accTimestamp, "Gravity");
 
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
             magneticFieldValues = sensorEvent.values;
             magTimestamp = sensorEvent.timestamp;
+
+            activitycommander.MagnetometerData(magneticFieldValues, magTimestamp);
+
             magnetometerValue = (float) Math.sqrt(magneticFieldValues[0]*magneticFieldValues[0]
                     +magneticFieldValues[1]*magneticFieldValues[1]
                     +magneticFieldValues[2]*magneticFieldValues[2]); //-----------sensor data required.
@@ -378,6 +402,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE){
             gyroValues = sensorEvent.values;
             gyrTimestamp = sensorEvent.timestamp;
+
+            activitycommander.GyroscopeData(gyroValues, gyrTimestamp);
+
             gyroIntValue =(float) Math.sqrt(gyroValues[0]*gyroValues[0]
                     +gyroValues[1]*gyroValues[1]
                     +gyroValues[2]*gyroValues[2]);//-----------sensor data required.
@@ -396,6 +423,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
             barValue = sensorEvent.values[0]; //-----------sensor data required.
             barTimestamp = sensorEvent.timestamp;
 
+            activitycommander.PressureData(barValue, barTimestamp);
+
             // Start plotting and time framing if button is hit
 
             if(plotCode==3 & stopPlot == false){
@@ -406,27 +435,11 @@ public class task1sensors extends Fragment implements SensorEventListener,
                 plotSensor(stopPlot,barValue,0,0,0,barTimestamp,"Barometer");
             }
         }
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_GRAVITY){
-            gravityValues = sensorEvent.values;
-            gravityTimestamp = sensorEvent.timestamp;
-            gravityValue =(float) Math.sqrt(gravityValues[0]*gravityValues[0]
-                    +gravityValues[1]*gravityValues[1]
-                    +gravityValues[2]*gravityValues[2]);//-----------sensor data required.
-
-            // Start plotting and time framing if button is hit
-
-            if(plotCode==4 & stopPlot == false){
-                if(timeRecord){
-                    lastTimestamp=gravityTimestamp/1000000;
-                    timeRecord = false;
-                }
-                plotSensor(stopPlot, gravityValue, gravityValues[0], gravityValues[1], gravityValues[2], gravityTimestamp, "Gravity");
-
-            }
-        }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT) {
             lightValue = sensorEvent.values[0]; //-----------sensor data required.
             lightTimestamp = sensorEvent.timestamp;
+
+            activitycommander.AmbientLightData(lightValue, lightTimestamp);
 
             double lightValue1 = (double)Math.round(lightValue * 10d) / 10d;
             lightsensor.setText(lightValue1 + " lx");
@@ -437,6 +450,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
         if (sensorEvent.sensor.getType() == Sensor.TYPE_PROXIMITY) {
             prxValue = sensorEvent.values[0]; //-----------sensor data required.
             prxTimestamp = sensorEvent.timestamp;
+
+            activitycommander.ProximityData(prxValue, prxTimestamp);
 
             if(prxValue > 0) {
                 proximity.setText("Far");

@@ -128,7 +128,45 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
     }
 
     @Override
-    public void SensorData(float sensor) {
-
+    public void LinearAccelerationData(float[] linearacceleration, long accTimestamp) {
+        task2pdr pdrdata = (task2pdr) pdrfragment;
+        pdrdata.setLinearAcceleration(linearacceleration, accTimestamp);
     }
+
+    @Override
+    public void GravityData(float[] gravity, long accTimestamp) {
+        task2pdr pdrdata = (task2pdr) pdrfragment;
+        pdrdata.setGravity(gravity, accTimestamp);
+    }
+
+    @Override
+    public void GyroscopeData(float[] gyrValues, long gyrTimestamp) {
+        task2pdr pdrdata = (task2pdr) pdrfragment;
+        pdrdata.setGyroscope(gyrValues, gyrTimestamp);
+    }
+
+    @Override
+    public void MagnetometerData(float[] magneticFieldValues, long magTimestamp) {
+        task2pdr pdrdata = (task2pdr) pdrfragment;
+        pdrdata.setMagnetometer(magneticFieldValues, magTimestamp);
+    }
+
+    @Override
+    public void PressureData(float barValue, long barTimestamp) {
+        task2pdr pdrdata = (task2pdr) pdrfragment;
+        pdrdata.setPressure(barValue, barTimestamp);
+    }
+
+    @Override
+    public void ProximityData(float prxValue, long prxTimestamp) {
+        task2pdr pdrdata = (task2pdr) pdrfragment;
+        pdrdata.setProximity(prxValue, prxTimestamp);
+    }
+
+    @Override
+    public void AmbientLightData(float lightValue, long lightTimestamp) {
+        task2pdr pdrdata = (task2pdr) pdrfragment;
+        pdrdata.setAmbientLight(lightValue, lightTimestamp);
+    }
+
 }

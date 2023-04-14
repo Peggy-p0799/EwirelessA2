@@ -13,7 +13,6 @@ import android.widget.Spinner;
 public class task2pdr extends Fragment {
 
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +37,37 @@ public class task2pdr extends Fragment {
         spinner_floor.setAdapter(floorAdapter);
 
         return view;
+    }
+
+
+    // These functions are triggered whenever a new value is sent from task1pdr.
+
+    public void setLinearAcceleration(float[] linearAcceleration, long accTimestamp) {
+
+    }
+
+    public void setGravity(float[] gravity, long accTimestamp) {
+
+    }
+
+    public void setGyroscope(float[] gyrValues, long gyrTimestamp) {
+
+    }
+
+    public void setMagnetometer(float [] magneticFieldValues, long magTimestamp) {
+
+    }
+
+    public void setPressure(float barValue, long barTimestamp) {
+
+    }
+
+    public void setAmbientLight(float lightValue, long lightTimestamp) {
+
+    }
+
+    public void setProximity(float prxValue, long prxTimestamp) {
+
     }
 
 
