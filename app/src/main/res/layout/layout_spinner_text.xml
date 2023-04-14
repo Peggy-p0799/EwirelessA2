@@ -1,0 +1,13 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textStyle="italic|bold"
+    android:textColor="#DDC700"
+    android:textSize="18sp"
+    android:text="Building"
+    android:layout_marginTop="10dp"
+    android:ellipsize="marquee"
+    android:layoutDirection="ltr"
+    android:paddingLeft="28dp"
+    android:singleLine="true" />
