@@ -22,10 +22,24 @@
 
 
         <ImageView
-            android:id="@+id/imageView22"
+            android:id="@+id/ivMap"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:src="@drawable/nucleusg" />
+
+        <com.example.a2_integration.myCanvas
+            android:id="@+id/trajectoryView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="10"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.566"
+            tools:ignore="MissingClass" />
+
     </FrameLayout>
 
     <TextView

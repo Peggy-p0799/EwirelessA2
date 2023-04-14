@@ -13,14 +13,14 @@
     <string-array name="Floors_N">
         <item> LG</item>
         <item> G</item>
-        <item> B1</item>
-        <item> B2</item>
-        <item> B3</item>
+        <item> 1</item>
+        <item> 2</item>
+        <item> 3</item>
     </string-array>
     <string-array name="Floors_L">
         <item> G</item>
-        <item> B1</item>
-        <item> B2</item>
-        <item> B3</item>
+        <item> 1</item>
+        <item> 2</item>
+        <item> 3</item>
     </string-array>
 </resources>
