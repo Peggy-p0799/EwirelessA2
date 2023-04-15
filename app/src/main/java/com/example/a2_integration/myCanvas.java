@@ -56,7 +56,7 @@ public class myCanvas extends View {
     public void drawInitialPosition(float x, float y) {
         // Load the x and y positions into the initial position pointF
         mInitialPosition.x = x;
-        mInitialPosition.y = y;
+        mInitialPosition.y = -y;
         invalidate();
     }
 
@@ -79,7 +79,7 @@ public class myCanvas extends View {
         }
 
         // Draw the initial position
-        canvas.drawCircle(mInitialPosition.x,-mInitialPosition.y,5,mPaint);
+        canvas.drawCircle(mInitialPosition.x,mInitialPosition.y,5,mPaint);
     }
 
     @Override

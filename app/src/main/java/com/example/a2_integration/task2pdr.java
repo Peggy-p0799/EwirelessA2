@@ -19,14 +19,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.Objects;
 
 public class task2pdr extends Fragment implements SensorEventListener {
 
+    /************************Definition*********************/
+    //________________________View_________________________//
     myCanvas trajectoryView;
 
     Spinner spinnerBuilding;
@@ -34,15 +39,38 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
     ImageView ivMap;
 
+    ToggleButton pdrToggleButton;
+    Button pdrResetButton;
+
     // Get access to sensors
     private SensorManager mSensorManager;
 
 
+    //________________________Var_________________________//
     private int displayHeight;
     private int displayWidth;
+
+    private boolean doPDR = false;
+    private boolean resetPDR = false;
+
+    //Height offset from status bar needs to be cut for precise touch event on map canvas
+    //Get status bar height here
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    int statusBarHeight;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        statusBarHeight=getStatusBarHeight();
 
         // Check and request permissions - ACTIVITY_RECOGNITION required for step detector
         if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.
@@ -68,11 +96,86 @@ public class task2pdr extends Fragment implements SensorEventListener {
         View view = inflater.inflate(R.layout.fragment_task2pdr, container, false);
 
         trajectoryView = (myCanvas) view.findViewById(R.id.trajectoryView);
-
         spinnerBuilding = (Spinner) view.findViewById(R.id.spnBuilding);
         spinnerFloor = (Spinner) view.findViewById(R.id.spnFloor);
-
         ivMap = (ImageView) view.findViewById(R.id.ivMap);
+        pdrToggleButton = (ToggleButton)view.findViewById(R.id.pdrToggle);
+        pdrResetButton = (Button)view.findViewById(R.id.pdrReset);
+
+        //Button Initialisation
+        pdrToggleOnclick();
+        pdrResetOnclick();
+
+        //Spinner Initialisation
+        spinnersInitialisation();
+
+        //TouchEvent Initialisation
+        view.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent touchEvent) {
+
+                if(touchEvent.getAction() == MotionEvent.ACTION_UP){
+                    touchX = touchEvent.getX();
+                    touchY = touchEvent.getY();
+                }
+                // Only register the initial position if PDR is not active
+                // Remember to set this flag true when the resetPDR button is pressed
+
+                    if (resetInitialPosition) {
+                    // Set mapOrigin to the coordinates of the lower left of the canvas
+                    trajectoryView.getLocationOnScreen(mapOrigin);
+                    // Only register the initial position if the touch is on the map
+                    if (touchX >= mapOrigin[0] && touchX <= (mapOrigin[0]+trajectoryView.getWidth())) {
+                        float debug=touchY;
+                        if (touchY >= displayHeight-trajectoryView.getHeight()) {
+                            // Draw a marker at the initial position
+                            float scaledTouchX = touchX-mapOrigin[0];
+                            float scaledTouchY = displayHeight-touchY-statusBarHeight; //
+                            drawInitialPosition(scaledTouchX,scaledTouchY);
+                        }
+                    }
+                }
+                return true;
+                //return super.onTouch(v, touchEvent);
+            }
+        });
+
+        return view;
+    }
+
+    private void pdrResetOnclick(){
+        pdrResetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "Long tap Reset button to reset whole PDR", Toast.LENGTH_SHORT).show();
+            }
+        });
+        pdrResetButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(getContext(), "PDR has been successfully reset", Toast.LENGTH_SHORT).show();
+                resetInitialPosition = true;
+                return true;
+            }
+        });
+    }
+
+    private void pdrToggleOnclick(){
+        pdrToggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(pdrToggleButton.isChecked()){
+                    Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
+                  // doPDR = true;
+                }
+                else {
+                    Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();
+                   // doPDR = false;
+                }
+            }
+        });
+    }
+
+    private void spinnersInitialisation(){
 
         ArrayAdapter<CharSequence> adapterBuilding = ArrayAdapter.createFromResource(getContext(),R.array.Buildings,R.layout.layout_spinner_text);
         ArrayAdapter<CharSequence> adapterFloorNucleus = ArrayAdapter.createFromResource(getContext(),R.array.Floors_N,R.layout.layout_spinner_text);
@@ -128,36 +231,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 // Do nothing
             }
         });
-
-        view.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent touchEvent) {
-
-                if(touchEvent.getAction() == MotionEvent.ACTION_UP){
-                    touchX = touchEvent.getX();
-                    touchY = touchEvent.getY();
-                }
-                // Only register the initial position if PDR is not active
-                // Remember to set this flag true when the resetPDR button is pressed
-                if (resetInitialPosition) {
-                    // Set mapOrigin to the coordinates of the lower left of the canvas
-                    trajectoryView.getLocationOnScreen(mapOrigin);
-                    mapOrigin[1] += trajectoryView.getHeight();
-                    // Only register the initial position if the touch is on the map
-                    if (touchX >= mapOrigin[0] && touchX <= (mapOrigin[0]+trajectoryView.getWidth())) {
-                        if (touchY <= mapOrigin[1] && touchY >= (mapOrigin[1]-trajectoryView.getHeight())) {
-                            // Draw a marker at the initial position
-                            drawInitialPosition((touchX-(mapOrigin[0])),((displayHeight-touchY)-(mapOrigin[1]-trajectoryView.getHeight())));
-                        }
-                    }
-                }
-                return true;
-                //return super.onTouch(v, touchEvent);
-            }
-        });
-
-        return view;
     }
-
     // Register the sensors with SensorManager when user returns to the activity
     @Override
     public void onResume() {
@@ -174,6 +248,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     }
 
     private final float[] stepDetectorValues = new float[2];
+
     // Called when sensor values change
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
@@ -198,6 +273,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private boolean resetInitialPosition = true;
     private final float nucleusPixelsToMetres = 0.05f;
     private final float libraryPixelsToMetres = 0.05f;
+
     private void setInitialPosition() {
         // Capture the initialFloor from the floor spinner
         initialFloor = floor;
@@ -220,7 +296,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         resetInitialPosition = false;
     }
 
-    private boolean doPDR = false;
+
+
     // Called when the start PDR button is tapped
     public void startPDRButton(View view) {
         // Alert user that PDR is currently active
@@ -283,7 +360,6 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
 
     // These functions are triggered whenever a new value is sent from task1pdr.
-
     private final float[] rotationMatrixTranspose = new float[16];   // 4x4 so multiplyMV() can be applied
     private boolean resetAccMaxMin = true;
     private float accVerticalMax;
@@ -291,6 +367,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private final float[] linearAccelerationPadded = new float[4];
     private final float[] accVerticalValues = new float[4];
     // Called when the accelerometer sensor values are updated
+
     public void setLinearAcceleration(float[] linearAcceleration, long accTimestamp) {
         // Ignore the sensor updates unless doPDR is true
         if (!doPDR) return;
@@ -326,6 +403,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private float[] gravityValues = new float[3];
     private boolean isGravityReady = false;
     // Called when the gravity sensor values are updated
+
+
     public void setGravity(float[] gravity, long accTimestamp) {
         // Ignore the sensor updates unless doPDR is true
         if (!doPDR) return;
@@ -419,6 +498,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
     private float theta;
     private int strideCount = 0;
+
     // Called when step detector sensor values are updated
     public void onStepDetectorChanged() {
         // Ignore the sensor updates unless doPDR is true
@@ -507,8 +587,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
             case LIBRARY:
                 // Convert from metres to pixels
                 trajectoryView.addPoint(x/libraryPixelsToMetres,y/libraryPixelsToMetres);
+                break;
         }
-
     }
 
     // Plot the initial position as a circle on the screen
@@ -547,7 +627,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private final byte NUCLEUS = 0x0;
     private final byte LIBRARY = 0x1;
     private byte floor;
-    private byte building;
+    private byte building= 0x0;
     private final float FLOOR_ERROR = 1f;
     private final float NUCLEUS_LOWER_GROUND = -3.0f;
     private final float GROUND = 0f;
@@ -557,6 +637,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private final float LIBRARY_FIRST = 5.0f;
     private final float LIBRARY_SECOND = 10.0f;
     private final float LIBRARY_THIRD = 15.0f;
+
     // Update the floor depending on the altitude
     private void updateFloor() {
         switch (building) {
@@ -608,51 +689,60 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private void updateFloorplan() {
         switch (building) {
             case NUCLEUS:
-                switch (floor) {
-                    case -1:
-                        // Set image to lower ground floor nucleus
-                        ivMap.setImageResource(R.drawable.nucleuslg);
-                        break;
-                    case 0:
-                        // Set image to ground floor nucleus
-                        ivMap.setImageResource(R.drawable.nucleusg);
-                        break;
-                    case 1:
-                        // Set image to first floor nucleus
-                        ivMap.setImageResource(R.drawable.nucleus1);
-                        break;
-                    case 2:
-                        // Set image to second floor nucleus
-                        ivMap.setImageResource(R.drawable.nucleus2);
-                        break;
-                    case 3:
-                        // Set image to third floor nucleus
-                        ivMap.setImageResource(R.drawable.nucleus3);
-                        break;
-                    default:
-                        // Keep image the same
-                }
+                switchNucleusFloorPlan();
+                break;
             case LIBRARY:
-                switch (floor) {
-                    case 0:
-                        // Set image to ground floor library
-                        ivMap.setImageResource(R.drawable.nucleusg);
-                        break;
-                    case 1:
-                        // Set image to first floor library
-                        ivMap.setImageResource(R.drawable.nucleus1);
-                        break;
-                    case 2:
-                        // Set image to second floor library
-                        ivMap.setImageResource(R.drawable.nucleus2);
-                        break;
-                    case 3:
-                        // Set image to third floor library
-                        ivMap.setImageResource(R.drawable.nucleus3);
-                        break;
-                    default:
-                        // Keep image the same
-                }
+                switchLibraryFloorPlan();
+                break;
+            default:
+                // Keep image the same
+        }
+    }
+
+    private void switchNucleusFloorPlan(){
+        switch (floor) {
+            case -1:
+                // Set image to lower ground floor nucleus
+                ivMap.setImageResource(R.drawable.nucleuslg);
+                break;
+            case 0:
+                // Set image to ground floor nucleus
+                ivMap.setImageResource(R.drawable.nucleusg);
+                break;
+            case 1:
+                // Set image to first floor nucleus
+                ivMap.setImageResource(R.drawable.nucleus1);
+                break;
+            case 2:
+                // Set image to second floor nucleus
+                ivMap.setImageResource(R.drawable.nucleus2);
+                break;
+            case 3:
+                // Set image to third floor nucleus
+                ivMap.setImageResource(R.drawable.nucleus3);
+                break;
+            default:
+                // Keep image the same
+        }
+    }
+    private void switchLibraryFloorPlan(){
+        switch (floor) {
+            case 0:
+                // Set image to ground floor library
+                ivMap.setImageResource(R.drawable.libraryg);
+                break;
+            case 1:
+                // Set image to first floor library
+                ivMap.setImageResource(R.drawable.library1);
+                break;
+            case 2:
+                // Set image to second floor library
+                ivMap.setImageResource(R.drawable.library2);
+                break;
+            case 3:
+                // Set image to third floor library
+                ivMap.setImageResource(R.drawable.library3);
+                break;
             default:
                 // Keep image the same
         }

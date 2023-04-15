@@ -13,6 +13,7 @@
         android:layout_width="400dp"
         android:layout_height="500dp"
         android:layout_marginTop="40dp"
+        android:layout_marginBottom="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.454"
@@ -68,7 +69,7 @@
 
 
         <ToggleButton
-            android:id="@+id/myToggleButton"
+            android:id="@+id/pdrToggle"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:background="@color/navyBlue"
@@ -80,7 +81,7 @@
 
 
         <Button
-            android:id="@+id/ibtReset"
+            android:id="@+id/pdrReset"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"

@@ -4,11 +4,15 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/drawable-v24/background_gradient.xml" value="0.3574074074074074" />
+        <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/drawable/bg_dropdown_floor.xml" value="0.27876447876447874" />
+        <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/drawable/valuesshape2.xml" value="0.11736111111111111" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_main.xml" value="0.3333333333333333" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_task11acc.xml" value="0.603125" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/activity_task1_ui.xml" value="0.4466666666666667" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/fragment_task1sensors.xml" value="0.3425925925925926" />
+        <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/fragment_task2pdr.xml" value="0.2667953667953668" />
         <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/layout_sensorlist.xml" value="0.3425925925925926" />
+        <entry key="..\:/AndriodApplication/A2_Integration/app/src/main/res/layout/layout_spinner_text.xml" value="0.3333333333333333" />
         <entry key="..\:/EWireless5/EwirelessA2/app/src/main/res/layout/fragment_task2pdr.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.31927083333333334" />
         <entry key="app/src/main/res/layout/activity_task11acc.xml" value="0.31927083333333334" />
