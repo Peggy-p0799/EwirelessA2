@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.Matrix;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -26,6 +27,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -106,7 +108,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         pdrToggleButton = (ToggleButton)view.findViewById(R.id.pdrToggle);
         pdrResetButton = (Button)view.findViewById(R.id.pdrReset);
         ivCompass= (ImageView) view.findViewById(R.id.imagCompass);
-
+        timerTextView = (TextView) view.findViewById(R.id.tvTimer);
         //Button Initialisation
         pdrToggleOnclick();
         pdrResetOnclick();
@@ -149,6 +151,26 @@ public class task2pdr extends Fragment implements SensorEventListener {
         return view;
     }
 
+    TextView timerTextView;
+    long startTime = 0;
+
+    //runs without a timer by reposting this handler at the end of the runnable
+    Handler timerHandler = new Handler();
+    Runnable timerRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            long millis = System.currentTimeMillis() - startTime;
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+
+            timerTextView.setText(String.format("%d:%02d", minutes, seconds));
+
+            timerHandler.postDelayed(this, 500);
+        }
+    };
+
     private void pdrResetOnclick(){
         pdrResetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,11 +196,16 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 if(pdrToggleButton.isChecked()){
                     // Initialise and start the PDR
                     startPDR();
+                    //Enable the timer
+                    startTime = System.currentTimeMillis();
+                    timerHandler.postDelayed(timerRunnable, 0);
                     Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     // Stop the PDR
                     stopPDR();
+                    //Disable the timer
+                    timerHandler.removeCallbacks(timerRunnable);
                     Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();
                 }
             }
