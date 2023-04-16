@@ -49,7 +49,7 @@ public class myCanvas extends View {
     }
 
     public void addPoint(float x, float y) {
-        mPoints.add(new PointF(x, y));
+        mPoints.add(new PointF(x, -y));
         invalidate();
     }
 

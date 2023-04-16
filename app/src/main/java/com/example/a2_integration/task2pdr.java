@@ -124,12 +124,14 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     // Set mapOrigin to the coordinates of the lower left of the canvas
                     trajectoryView.getLocationOnScreen(mapOrigin);
                     // Only register the initial position if the touch is on the map
+                        float canvasWidth = trajectoryView.getWidth();
+                        float canvasHeight = trajectoryView.getHeight();
                     if (touchX >= mapOrigin[0] && touchX <= (mapOrigin[0]+trajectoryView.getWidth())) {
                         float debug=touchY;
                         if (touchY >= displayHeight-trajectoryView.getHeight()) {
                             // Draw a marker at the initial position
                             float scaledTouchX = touchX-mapOrigin[0];
-                            float scaledTouchY = displayHeight-touchY-statusBarHeight; //
+                            float scaledTouchY = displayHeight-touchY-statusBarHeight;
                             drawInitialPosition(scaledTouchX,scaledTouchY);
                         }
                     }
@@ -152,8 +154,9 @@ public class task2pdr extends Fragment implements SensorEventListener {
         pdrResetButton.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                // Reset the PDR
+                resetPDR();
                 Toast.makeText(getContext(), "PDR has been successfully reset", Toast.LENGTH_SHORT).show();
-                resetInitialPosition = true;
                 return true;
             }
         });
@@ -164,12 +167,14 @@ public class task2pdr extends Fragment implements SensorEventListener {
             @Override
             public void onClick(View v) {
                 if(pdrToggleButton.isChecked()){
+                    // Initialise and start the PDR
+                    startPDR();
                     Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
-                  // doPDR = true;
                 }
                 else {
+                    // Stop the PDR
+                    stopPDR();
                     Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();
-                   // doPDR = false;
                 }
             }
         });
@@ -271,8 +276,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private float touchY;
     private int[] mapOrigin = new int[2];
     private boolean resetInitialPosition = true;
-    private final float nucleusPixelsToMetres = 0.05f;
-    private final float libraryPixelsToMetres = 0.05f;
+    private final float nucleusPixelsToMetres = 46.5f/1050f;
+    private final float libraryPixelsToMetres = 21.5f/1050f;
 
     private void setInitialPosition() {
         // Capture the initialFloor from the floor spinner
@@ -280,12 +285,12 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Convert touch position to real world position depending on the building
         switch (building) {
             case NUCLEUS:
-                positionX = (touchX-(mapOrigin[0]))*nucleusPixelsToMetres;
-                positionY = (touchY-(mapOrigin[1]-trajectoryView.getHeight()))*nucleusPixelsToMetres;
+                positionX = (touchX-mapOrigin[0])*nucleusPixelsToMetres;
+                positionY = (displayHeight-touchY-statusBarHeight)*nucleusPixelsToMetres;
                 break;
             case LIBRARY:
-                positionX = (touchX-(mapOrigin[0]))*libraryPixelsToMetres;
-                positionY = (touchY-(mapOrigin[1]-trajectoryView.getHeight()))*libraryPixelsToMetres;
+                positionX = (touchX-mapOrigin[0])*libraryPixelsToMetres;
+                positionY = (displayHeight-touchY-statusBarHeight)*libraryPixelsToMetres;
                 break;
             default:
                 // Do nothing
@@ -298,13 +303,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
 
 
-    // Called when the start PDR button is tapped
-    public void startPDRButton(View view) {
-        // Alert user that PDR is currently active
-        if (doPDR) {
-            doToast("PDR is active. Press 'Stop PDR' to stop the current trajectory.");
-            return;
-        }
+    // Called when the startPDR toggle button is active
+    public void startPDR() {
         // Signal all sensor measurements to be reset
         resetAccMaxMin = true;
         resetBarometer = true;
@@ -318,35 +318,37 @@ public class task2pdr extends Fragment implements SensorEventListener {
         isGravityReady = false;
         // Reset the variables
         strideCount = 0;
-        //positionX = 0f;
-        //tvPositionX.setText("positionX: " + positionX);
-        //positionY = 0f;
-        //tvPositionY.setText("positionY: " + positionY);
         // Remove the previous trajectory path
         trajectoryView.clearPoints();
-        // Capture the initial position and convert to real world coordinates
-        setInitialPosition();
         // Lock the spinners
         spinnerBuilding.setEnabled(false);
         spinnerFloor.setEnabled(false);
+        // Capture the initial position and convert to real world coordinates
+        setInitialPosition();
         // Set the doPDR flag to true
         doPDR = true;
     }
 
-    // Called when the stop PDR button is tapped
-    public void stopPDRButton(View view) {
-        // Alert user that PDR is currently not active
-        if (!doPDR) {
-            doToast("PDR is stopped. Tap 'Start PDR' to create a new trajectory.");
-            return;
-        }
+    // Called when the stopPDR toggle button is active
+    public void stopPDR() {
         // Unlock the spinners
         spinnerBuilding.setEnabled(true);
         spinnerFloor.setEnabled(true);
-        // Remember to allow initial position updates when the resetPDR button is pressed
-        resetInitialPosition = true;
-        // Set the doPDR flag to false
+        // Do not erase the trajectory, only do this when resetPDR is tapped
+        // Ignore sensor updates
         doPDR = false;
+    }
+
+    // Called when the resetPDR button is tapped
+    private void resetPDR() {
+        // If the PDR is active, toggle the stop button
+        pdrToggleButton.setChecked(false);
+        // Make sure the PDR is stopped
+        stopPDR();
+        // Erase the trajectory
+        trajectoryView.clearPoints();
+        // Allow initial position updates
+        resetInitialPosition = true;
     }
 
     private Toast mToast;
@@ -441,7 +443,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         gyroHeading += -gyroscopeValues[2] * timestep;
 
         // Advance the previous timestamp
-        previousGyroTimestamp = gyroscopeValues[3];
+        previousGyroTimestamp = gyrTimestamp;
 
         // Flag when the gyroscope change in angle is initialised
         isGyroReady = true;
@@ -575,6 +577,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // positionX (East) and positionY (North) already align with the on-screen map
         // coordinates x (Right) and y (Down) respectively
         plotTrajectory(positionX,positionY);
+        //trajectoryView.addPoint(577,437);
     }
 
     // Plot the step on the canvas

@@ -126,7 +126,7 @@
 
     <ImageView
         android:id="@+id/imagCompass"
-        android:layout_width="117dp"
+        android:layout_width="103dp"
         android:layout_height="103dp"
         android:layout_marginBottom="4dp"
         android:src="@drawable/compass"
