@@ -59,6 +59,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     private Sensor ambientLightSensor;
     private Sensor proximitySensor;
     private Sensor gravitySensor;
+    private Sensor linearAccelerationSensor;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private WifiManager wifiManager;
@@ -95,7 +96,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     String coord, coord2;
 
     float accelerometerValues = 0;
-    final float alpha = (float) 0.8;
+    final float alpha = (float) 0.9;
     private float gravity [] = new float[3];
 
     double accPower,accRange,accResolution,accMinDelay;
@@ -110,6 +111,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     float magnetometerValue;
     float[] gyroValues = new float[3];
     float gravityValues = 0;
+    float[] linearAcceleration = new float[3];
 
     float gyroIntValue;
     float barValue;
@@ -119,7 +121,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     int plotCode=99;
     boolean stopPlot=true;
     //Sensor timeStamp
-    long accTimestamp,magTimestamp,gyrTimestamp,barTimestamp,prxTimestamp,lightTimestamp,gravityTimestamp;
+    long accTimestamp,magTimestamp,gyrTimestamp,barTimestamp,prxTimestamp,lightTimestamp,gravityTimestamp,linearAccelerationTimestamp;
     double lastTimestamp=0;
     double mLastXvalue=0;
     boolean timeRecord=false;
@@ -340,24 +342,23 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             // Add a high pass filter (Alpha contributed) to get the real acceleration.
 
-            gravity[0] = alpha * gravity[0] + (1 - alpha) * sensorEvent.values[0];
-            gravity[1] = alpha * gravity[1] + (1 - alpha) * sensorEvent.values[1];
-            gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
+            //gravity[0] = alpha * gravity[0] + (1 - alpha) * sensorEvent.values[0];
+            //gravity[1] = alpha * gravity[1] + (1 - alpha) * sensorEvent.values[1];
+            //gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
 
 
-            float[] linearAcceleration = new float[3];
-            linearAcceleration[0] = sensorEvent.values[0] - gravity[0];
-            linearAcceleration[1] = sensorEvent.values[1] - gravity[1];
-            linearAcceleration[2] = sensorEvent.values[2] - gravity[2];
+            //float[] linearAcceleration = new float[3];
+            //linearAcceleration[0] = sensorEvent.values[0] - gravity[0];
+            //linearAcceleration[1] = sensorEvent.values[1] - gravity[1];
+            //linearAcceleration[2] = sensorEvent.values[2] - gravity[2];
 
 
 
             accTimestamp = sensorEvent.timestamp;
 
-            activitycommander.LinearAccelerationData(linearAcceleration, accTimestamp);
-            activitycommander.GravityData(gravity, accTimestamp);
+            //activitycommander.GravityData(gravity, accTimestamp);
 
-            accelerometerValues = (float) Math.sqrt(linearAcceleration[0]*linearAcceleration[0]+linearAcceleration[1]*linearAcceleration[1]+linearAcceleration[2]*linearAcceleration[2]);//-----------sensor data required.
+            //accelerometerValues = (float) Math.sqrt(linearAcceleration[0]*linearAcceleration[0]+linearAcceleration[1]*linearAcceleration[1]+linearAcceleration[2]*linearAcceleration[2]);//-----------sensor data required.
             gravityValues = (float) Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
 
             // Start plotting and time framing if button is hit
@@ -367,7 +368,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
                     lastTimestamp=accTimestamp/1000000;
                     timeRecord = false;
                 }
-                plotSensor(stopPlot, accelerometerValues, linearAcceleration[0], linearAcceleration[1], linearAcceleration[2], accTimestamp, "Accelerometer");
+                //plotSensor(stopPlot, accelerometerValues, linearAcceleration[0], linearAcceleration[1], linearAcceleration[2], accTimestamp, "Accelerometer");
 
             }
             if(plotCode==4 & stopPlot == false){
@@ -378,6 +379,19 @@ public class task1sensors extends Fragment implements SensorEventListener,
                 plotSensor(stopPlot, gravityValues, gravity[0], gravity[1], gravity[2], accTimestamp, "Gravity");
 
             }
+        }
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_GRAVITY) {
+            gravity = sensorEvent.values;
+            gravityTimestamp = sensorEvent.timestamp;
+            activitycommander.GravityData(gravity, gravityTimestamp);
+        }
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+            float alpha3Hz = 0.84f;
+            linearAcceleration[0] = alpha3Hz * linearAcceleration[0] + (1 - alpha3Hz) * sensorEvent.values[0];
+            linearAcceleration[1] = alpha3Hz * linearAcceleration[1] + (1 - alpha3Hz) * sensorEvent.values[1];
+            linearAcceleration[2] = alpha3Hz * linearAcceleration[2] + (1 - alpha3Hz) * sensorEvent.values[2];
+            linearAccelerationTimestamp = sensorEvent.timestamp;
+            activitycommander.LinearAccelerationData(linearAcceleration, linearAccelerationTimestamp);
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
             magneticFieldValues = sensorEvent.values;
@@ -593,6 +607,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         sensorManager.registerListener(this, ambientLightSensor, 10000);
         sensorManager.registerListener(this, proximitySensor, 10000);
         sensorManager.registerListener(this,gravitySensor,10000);
+        sensorManager.registerListener(this, linearAccelerationSensor, 10000);
         //Register the sensor when user returns to the activity
         getContext().registerReceiver(wifiScanReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         // locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
@@ -684,6 +699,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         ambientLightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
 
         if (accelerometer != null){

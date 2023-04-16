@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // So user can always see the display
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // This executes on creation of the app
         setTitle("Assignment 2"); // Title of this app is Compass+

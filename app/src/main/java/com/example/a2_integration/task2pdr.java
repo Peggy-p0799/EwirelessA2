@@ -12,11 +12,13 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.Matrix;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
@@ -26,8 +28,11 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import org.w3c.dom.Text;
 
 import java.util.Objects;
 
@@ -42,6 +47,13 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
     ImageView ivMap;
     ImageView ivCompass;
+
+    TextView tvHeading;
+    TextView tvGyroHeading;
+    TextView tvCompassHeading;
+    TextView tvTimer;
+    TextView tvTouchX;
+    TextView tvTouchY;
 
     ToggleButton pdrToggleButton;
     Button pdrResetButton;
@@ -106,6 +118,12 @@ public class task2pdr extends Fragment implements SensorEventListener {
         pdrToggleButton = (ToggleButton)view.findViewById(R.id.pdrToggle);
         pdrResetButton = (Button)view.findViewById(R.id.pdrReset);
         ivCompass= (ImageView) view.findViewById(R.id.imagCompass);
+        tvHeading = (TextView) view.findViewById(R.id.tvHeading);
+        tvCompassHeading = (TextView) view.findViewById(R.id.tvCompassHeading);
+        tvGyroHeading = (TextView) view.findViewById(R.id.tvGyroHeading);
+        tvTimer = (TextView) view.findViewById(R.id.tvTimer);
+        tvTouchX = (TextView) view.findViewById(R.id.tvTouchX);
+        tvTouchY = (TextView) view.findViewById(R.id.tvTouchY);
 
         //Button Initialisation
         pdrToggleOnclick();
@@ -121,6 +139,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 if(touchEvent.getAction() == MotionEvent.ACTION_UP){
                     touchX = touchEvent.getX();
                     touchY = touchEvent.getY();
+                    tvTouchX.setText("touchX: " + touchX);
+                    tvTouchY.setText("touchY: " + touchY);
                 }
                 // Only register the initial position if PDR is not active
                 // Remember to set this flag true when the resetPDR button is pressed
@@ -149,6 +169,26 @@ public class task2pdr extends Fragment implements SensorEventListener {
         return view;
     }
 
+
+    long startTime = 0;
+
+    //runs without a timer by reposting this handler at the end of the runnable
+    Handler timerHandler = new Handler();
+    Runnable timerRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            long millis = System.currentTimeMillis() - startTime;
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+
+            tvTimer.setText(String.format("%d:%02d", minutes, seconds));
+
+            timerHandler.postDelayed(this, 500);
+        }
+    };
+
     private void pdrResetOnclick(){
         pdrResetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,11 +214,16 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 if(pdrToggleButton.isChecked()){
                     // Initialise and start the PDR
                     startPDR();
+                    //Enable the timer
+                    startTime = System.currentTimeMillis();
+                    timerHandler.postDelayed(timerRunnable, 0);
                     Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     // Stop the PDR
                     stopPDR();
+                    //Disable the timer
+                    timerHandler.removeCallbacks(timerRunnable);
                     Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -281,8 +326,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private float touchY;
     private int[] mapOrigin = new int[2];
     private boolean resetInitialPosition = true;
-    private final float nucleusPixelsToMetres = 46.5f/1050f;
-    private final float libraryPixelsToMetres = 21.5f/1050f;
+    private final float nucleusPixelsToMetres = 55f/1080f;
+    private final float libraryPixelsToMetres = 21.5f/860f;
 
     private void setInitialPosition() {
         // Capture the initialFloor from the floor spinner
@@ -380,15 +425,19 @@ public class task2pdr extends Fragment implements SensorEventListener {
         if (!doPDR) return;
 
         // Pad the accelerometer values into a 4-element vector for multiplyMV() method
-        System.arraycopy(linearAcceleration, 0, linearAccelerationPadded, 0, 3);
-        accVerticalValues[3] = 0;
+        //System.arraycopy(linearAcceleration, 0, linearAccelerationPadded, 0, 3);
+        //accVerticalValues[3] = 0;
 
         // Transform the acceleration from the device axes to global axes
         // Transpose is needed to convert row-major matrix to column-major matrix for opengl
         // Now the z-axis ie. accFilteredValues[2] should be perpendicular to the ground
-        Matrix.transposeM(rotationMatrixTranspose,0,rotationMatrix,0);
-        Matrix.multiplyMV(accVerticalValues, 0, rotationMatrixTranspose, 0,
-                linearAccelerationPadded, 0);
+        //Matrix.transposeM(rotationMatrixTranspose,0,rotationMatrix,0);
+        //Matrix.multiplyMV(accVerticalValues, 0, rotationMatrixTranspose, 0,
+        //        linearAccelerationPadded, 0);
+
+        // Assume the device is held flat so do not correct for device orientation
+        System.arraycopy(accVerticalValues, 0, linearAcceleration, 0, 3);
+        accVerticalValues[3] = 0;
 
         // Reset the max/min accelerations after a step is detected
         // They are reset to the first accelerometer reading of the next stride
@@ -446,6 +495,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Convert angle between device heading and North to 0 > angle > 2*pi
         gyroDeltaHeading = -gyroscopeValues[2] * timestep;
         gyroHeading += -gyroscopeValues[2] * timestep;
+        tvGyroHeading.setText("gyroHeading: " + Math.toDegrees(gyroHeading));
 
         // Advance the previous timestamp
         previousGyroTimestamp = gyrTimestamp;
@@ -532,6 +582,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Store the device heading based on the gravity and magnetometer sensors
         // Convert angle between device heading and North to 0 > angle > 2*pi
         compassHeading = orientationAngles[0];
+        tvCompassHeading.setText("compassHeading: " + Math.toDegrees(compassHeading));
         isCompassReady = true;  // Flag when the compass angle is initialised
     }
 
@@ -559,8 +610,9 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // compassHeading is derived from the gravity and magnetometer sensors
         // heading = (0.98f) * (heading + gyroDeltaHeading) + (0.02f) * compassHeading;
         // Combine the headings returned by the compass and gyroscope using a weighted average
-        heading = ((PI*2.0f) + compassHeading + (0.98f*diff)) % (PI*2.0f);
-        heading_degree= (float) Math.toDegrees(heading);
+        heading = ((PI*2.0f) + compassHeading + (0.9999f*diff)) % (PI*2.0f);
+        tvHeading.setText("heading: " + Math.toDegrees(heading));
+        heading_degree = (float) Math.toDegrees(heading);
         compassRotation();
     }
 
