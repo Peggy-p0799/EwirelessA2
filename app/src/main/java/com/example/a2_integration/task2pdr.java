@@ -17,6 +17,9 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -38,6 +41,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     Spinner spinnerFloor;
 
     ImageView ivMap;
+    ImageView ivCompass;
 
     ToggleButton pdrToggleButton;
     Button pdrResetButton;
@@ -101,6 +105,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         ivMap = (ImageView) view.findViewById(R.id.ivMap);
         pdrToggleButton = (ToggleButton)view.findViewById(R.id.pdrToggle);
         pdrResetButton = (Button)view.findViewById(R.id.pdrReset);
+        ivCompass= (ImageView) view.findViewById(R.id.imagCompass);
 
         //Button Initialisation
         pdrToggleOnclick();
@@ -532,6 +537,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
     private boolean resetHeading = true;
     private float heading;
+    private float heading_degree;
     // Sensor fusion for heading using a complementary filter with tau = 0.49, fc ~= 0.32 Hz
     private void sensorFusionHeading() {
         float PI = (float) Math.PI;
@@ -554,6 +560,20 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // heading = (0.98f) * (heading + gyroDeltaHeading) + (0.02f) * compassHeading;
         // Combine the headings returned by the compass and gyroscope using a weighted average
         heading = ((PI*2.0f) + compassHeading + (0.98f*diff)) % (PI*2.0f);
+        heading_degree= (float) Math.toDegrees(heading);
+        compassRotation();
+    }
+
+    private void compassRotation(){
+        RotateAnimation rotate = new RotateAnimation(
+                heading_degree, heading_degree,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        rotate.setDuration(5000);
+        rotate.setInterpolator(new LinearInterpolator());
+        rotate.setRepeatCount(Animation.INFINITE);
+
+        ivCompass.startAnimation(rotate);
     }
 
     private float strideLength;
