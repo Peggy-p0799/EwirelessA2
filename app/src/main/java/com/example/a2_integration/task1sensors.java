@@ -95,7 +95,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
     String coord, coord2;
 
-    float accelerometerValues = 0;
+    float linearAccelerometerValues = 0;
     final float alpha = (float) 0.9;
     private float gravity [] = new float[3];
 
@@ -111,6 +111,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     float magnetometerValue;
     float[] gyroValues = new float[3];
     float gravityValues = 0;
+    float [] rawAcceleration = new float[3];
     float[] linearAcceleration = new float[3];
 
     float gyroIntValue;
@@ -340,37 +341,22 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
 
-            // Add a high pass filter (Alpha contributed) to get the real acceleration.
-
-            //gravity[0] = alpha * gravity[0] + (1 - alpha) * sensorEvent.values[0];
-            //gravity[1] = alpha * gravity[1] + (1 - alpha) * sensorEvent.values[1];
-            //gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
-
-
-            //float[] linearAcceleration = new float[3];
-            //linearAcceleration[0] = sensorEvent.values[0] - gravity[0];
-            //linearAcceleration[1] = sensorEvent.values[1] - gravity[1];
-            //linearAcceleration[2] = sensorEvent.values[2] - gravity[2];
+            //Pass raw data to the cloud
+            rawAcceleration[0] = sensorEvent.values[0];
+            rawAcceleration[1] = sensorEvent.values[1];
+            rawAcceleration[2] = sensorEvent.values[2];
 
 
 
             accTimestamp = sensorEvent.timestamp;
 
-            //activitycommander.GravityData(gravity, accTimestamp);
-
-            //accelerometerValues = (float) Math.sqrt(linearAcceleration[0]*linearAcceleration[0]+linearAcceleration[1]*linearAcceleration[1]+linearAcceleration[2]*linearAcceleration[2]);//-----------sensor data required.
+        }
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_GRAVITY) {
+            gravity = sensorEvent.values;
+            gravityTimestamp = sensorEvent.timestamp;
             gravityValues = (float) Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
+            activitycommander.GravityData(gravity, gravityTimestamp);
 
-            // Start plotting and time framing if button is hit
-
-            if(plotCode==0 & stopPlot == false){
-                if(timeRecord){
-                    lastTimestamp=accTimestamp/1000000;
-                    timeRecord = false;
-                }
-                //plotSensor(stopPlot, accelerometerValues, linearAcceleration[0], linearAcceleration[1], linearAcceleration[2], accTimestamp, "Accelerometer");
-
-            }
             if(plotCode==4 & stopPlot == false){
                 if(timeRecord){
                     lastTimestamp=accTimestamp/1000000;
@@ -380,18 +366,27 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             }
         }
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_GRAVITY) {
-            gravity = sensorEvent.values;
-            gravityTimestamp = sensorEvent.timestamp;
-            activitycommander.GravityData(gravity, gravityTimestamp);
-        }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             float alpha3Hz = 0.84f;
             linearAcceleration[0] = alpha3Hz * linearAcceleration[0] + (1 - alpha3Hz) * sensorEvent.values[0];
             linearAcceleration[1] = alpha3Hz * linearAcceleration[1] + (1 - alpha3Hz) * sensorEvent.values[1];
             linearAcceleration[2] = alpha3Hz * linearAcceleration[2] + (1 - alpha3Hz) * sensorEvent.values[2];
             linearAccelerationTimestamp = sensorEvent.timestamp;
+            linearAccelerometerValues = (float) Math.sqrt(linearAcceleration[0]*linearAcceleration[0]+
+                    linearAcceleration[1]*linearAcceleration[1]+
+                    linearAcceleration[2]*linearAcceleration[2]);
             activitycommander.LinearAccelerationData(linearAcceleration, linearAccelerationTimestamp);
+
+            // Start plotting and time framing if button is hit
+
+            if(plotCode==0 & stopPlot == false){
+                if(timeRecord){
+                    lastTimestamp=linearAccelerationTimestamp/1000000;
+                    timeRecord = false;
+                }
+                plotSensor(stopPlot, linearAccelerometerValues, linearAcceleration[0], linearAcceleration[1], linearAcceleration[2], accTimestamp, "Accelerometer");
+
+            }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
             magneticFieldValues = sensorEvent.values;
