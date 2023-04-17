@@ -436,7 +436,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         //        linearAccelerationPadded, 0);
 
         // Assume the device is held flat so do not correct for device orientation
-        System.arraycopy(accVerticalValues, 0, linearAcceleration, 0, 3);
+        System.arraycopy(linearAcceleration, 0, accVerticalValues, 0, 3);
         accVerticalValues[3] = 0;
 
         // Reset the max/min accelerations after a step is detected
