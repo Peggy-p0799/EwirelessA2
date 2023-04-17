@@ -25,8 +25,10 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class task1sensors extends Fragment implements SensorEventListener,
-        sensorRecyclerViewAdaptor.OnButton1ClickListener,sensorRecyclerViewAdaptor.OnButton2ClickListener {
+        sensorRecyclerViewAdaptor.OnButton1ClickListener, sensorRecyclerViewAdaptor.OnButton2ClickListener {
 
     private static final String TAG = "Task1Activity";
 
@@ -97,21 +99,21 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
     float linearAccelerometerValues = 0;
     final float alpha = (float) 0.9;
-    private float gravity [] = new float[3];
+    private float gravity[] = new float[3];
 
-    double accPower,accRange,accResolution,accMinDelay;
-    double magPower,magRange,magResolution,magMinDelay;
-    double gyrPower,gyrRange,gyrResolution,gyrMinDelay;
-    double barPower,barRange,barResolution,barMinDelay;
-    double prxPower,prxRange,prxResolution,prxMinDelay;
-    double lightPower,lightRange,lightResolution,lightMinDelay;
-    double gravityPower,gravityRange,gravityResolution,gravityMinDelay;
+    double accPower, accRange, accResolution, accMinDelay;
+    double magPower, magRange, magResolution, magMinDelay;
+    double gyrPower, gyrRange, gyrResolution, gyrMinDelay;
+    double barPower, barRange, barResolution, barMinDelay;
+    double prxPower, prxRange, prxResolution, prxMinDelay;
+    double lightPower, lightRange, lightResolution, lightMinDelay;
+    double gravityPower, gravityRange, gravityResolution, gravityMinDelay;
 
     float[] magneticFieldValues = new float[3];
     float magnetometerValue;
     float[] gyroValues = new float[3];
     float gravityValues = 0;
-    float [] rawAcceleration = new float[3];
+    float[] rawAcceleration = new float[3];
     float[] linearAcceleration = new float[3];
 
     float gyroIntValue;
@@ -119,38 +121,38 @@ public class task1sensors extends Fragment implements SensorEventListener,
     float lightValue;
     float prxValue;
     int pointsPlotted = 5;
-    int plotCode=99;
-    boolean stopPlot=true;
+    int plotCode = 99;
+    boolean stopPlot = true;
     //Sensor timeStamp
-    long accTimestamp,magTimestamp,gyrTimestamp,barTimestamp,prxTimestamp,lightTimestamp,gravityTimestamp,linearAccelerationTimestamp;
-    double lastTimestamp=0;
-    double mLastXvalue=0;
-    boolean timeRecord=false;
-    boolean plotrunning=false;
+    long accTimestamp, magTimestamp, gyrTimestamp, barTimestamp, prxTimestamp, lightTimestamp, gravityTimestamp, linearAccelerationTimestamp;
+    double lastTimestamp = 0;
+    double mLastXvalue = 0;
+    boolean timeRecord = false;
+    boolean plotrunning = false;
 
 
-    LineGraphSeries<DataPoint> accSeries = new LineGraphSeries<DataPoint>(new DataPoint[] {
+    LineGraphSeries<DataPoint> accSeries = new LineGraphSeries<DataPoint>(new DataPoint[]{
             new DataPoint(0, 1),
             new DataPoint(1, 5),
             new DataPoint(2, 3),
             new DataPoint(3, 2),
             new DataPoint(4, 6)
     });
-    LineGraphSeries<DataPoint> accSeriesx = new LineGraphSeries<DataPoint>(new DataPoint[] {
+    LineGraphSeries<DataPoint> accSeriesx = new LineGraphSeries<DataPoint>(new DataPoint[]{
             new DataPoint(0, 1),
             new DataPoint(1, 5),
             new DataPoint(2, 3),
             new DataPoint(3, 2),
             new DataPoint(4, 6)
     });
-    LineGraphSeries<DataPoint> accSeriesy = new LineGraphSeries<DataPoint>(new DataPoint[] {
+    LineGraphSeries<DataPoint> accSeriesy = new LineGraphSeries<DataPoint>(new DataPoint[]{
             new DataPoint(0, 1),
             new DataPoint(1, 5),
             new DataPoint(2, 3),
             new DataPoint(3, 2),
             new DataPoint(4, 6)
     });
-    LineGraphSeries<DataPoint> accSeriesz = new LineGraphSeries<DataPoint>(new DataPoint[] {
+    LineGraphSeries<DataPoint> accSeriesz = new LineGraphSeries<DataPoint>(new DataPoint[]{
             new DataPoint(0, 1),
             new DataPoint(1, 5),
             new DataPoint(2, 3),
@@ -164,8 +166,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
     private static final int REQUEST_ID_READ_WRITE_PERMISSION = 99;
     private static final int REQUEST_ID_Location_PERMISSION = 100;
 
-    private void askWIFInGPSPermissions(){
-        if(android.os.Build.VERSION.SDK_INT >=23){
+    private void askWIFInGPSPermissions() {
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
             //CHECK IF WE HAVE READ/WRITE PERMISSION
             int wifiAccessPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_WIFI_STATE);
             int wifiAChangePermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CHANGE_WIFI_STATE);
@@ -173,10 +175,10 @@ public class task1sensors extends Fragment implements SensorEventListener,
             int fineLocationPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
             int internetPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.INTERNET);
 
-            if(wifiAccessPermission != PackageManager.PERMISSION_GRANTED ||
+            if (wifiAccessPermission != PackageManager.PERMISSION_GRANTED ||
                     wifiAChangePermission != PackageManager.PERMISSION_GRANTED ||
                     coarseLocationPermission != PackageManager.PERMISSION_GRANTED ||
-                    fineLocationPermission != PackageManager.PERMISSION_GRANTED){
+                    fineLocationPermission != PackageManager.PERMISSION_GRANTED) {
                 //if dont have permission so prompt the user
                 this.requestPermissions(
                         new String[]{
@@ -190,7 +192,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
                 return;
             }
 
-            if(coarseLocationPermission != PackageManager.PERMISSION_GRANTED ||
+            if (coarseLocationPermission != PackageManager.PERMISSION_GRANTED ||
                     internetPermission != PackageManager.PERMISSION_GRANTED ||
                     fineLocationPermission != PackageManager.PERMISSION_GRANTED) {
                 //If dont have permission so prompt the user.
@@ -208,37 +210,36 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
     //when you have the request results
     @Override
-    public void onRequestPermissionsResult( int requestCode,
-                                            String permissions[], int[] grantResults){
-        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
-        switch (requestCode){
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
 
-            case REQUEST_ID_READ_WRITE_PERMISSION:{
-                if(grantResults.length > 1
+            case REQUEST_ID_READ_WRITE_PERMISSION: {
+                if (grantResults.length > 1
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && grantResults[1] == PackageManager.PERMISSION_GRANTED
                         && grantResults[2] == PackageManager.PERMISSION_GRANTED
-                        && grantResults[3] == PackageManager.PERMISSION_GRANTED){
+                        && grantResults[3] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(getContext(), "WIFI Permission granted!", Toast.LENGTH_LONG).show();
                 }
                 //Cancel or denied
-                else{
+                else {
                     Toast.makeText(getContext(), "WIFI Permission denied!", Toast.LENGTH_LONG).show();
                 }
                 break;
             }
 
-            case REQUEST_ID_Location_PERMISSION:{
+            case REQUEST_ID_Location_PERMISSION: {
                 //If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 1
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && grantResults[1] == PackageManager.PERMISSION_GRANTED
                         && grantResults[2] == PackageManager.PERMISSION_GRANTED
                 ) {
-                    Toast.makeText(getContext(), "GPS Permission granted!",Toast.LENGTH_LONG).show();
-                }
-                else {
-                    Toast.makeText(getContext(), "GPS Permission denied!",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "GPS Permission granted!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getContext(), "GPS Permission denied!", Toast.LENGTH_LONG).show();
                 }
                 break;
             }
@@ -246,23 +247,51 @@ public class task1sensors extends Fragment implements SensorEventListener,
         }
     }
 
-    BroadcastReceiver wifiScanReciever = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context C, Intent intent) {
-            List<ScanResult> wifiScanList = wifiManager.getScanResults();
-            getContext().unregisterReceiver(this);
-            wifis = new String[wifiScanList.size()];
-            Log.e("WiFi", String.valueOf(wifiScanList.size()));
-                for(int i = 0; i< wifiScanList.size();i++){
-                wifis[i]=wifiScanList.get(i).SSID +
-                        "," + wifiScanList.get(i).BSSID +
-                        "," + String.valueOf(wifiScanList.get(i).level);
-                Log.e("WiFi", String.valueOf(wifis[i]));
-            }
-           // lv.setAdapter(new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1,wifis));
+    private final ArrayList<Integer> mWifiRSSI = new ArrayList<>();
+    private final ArrayList<String> mWifiMacAddress = new ArrayList<>();
 
+    //Scan wifi every 2s
+    private static final int WIFI_SCAN_INTERVAL_MS = 2000; // 2 seconds
+    private final Handler mHandler = new Handler();
+    private final Runnable mWifiScanRunnable = new Runnable() {
+        @Override
+        public void run() {
+            scanForWifi();
+            mHandler.postDelayed(this, WIFI_SCAN_INTERVAL_MS);
         }
     };
+
+    private void startWifiScanning() {
+        mHandler.post(mWifiScanRunnable);
+    }
+
+    private void stopWifiScanning() {
+        mHandler.removeCallbacks(mWifiScanRunnable);
+        mWifiRSSI.clear();
+        mWifiMacAddress.clear();
+    }
+
+    TextView tvWifi1;
+    TextView tvWifi2;
+    private void scanForWifi() {
+        wifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
+
+        // Start a Wi-Fi scan
+        wifiManager.startScan();
+
+        // Get the list of available Wi-Fi networks
+        List<ScanResult> scanResults = wifiManager.getScanResults();
+        List<ScanResult> wifiScanList = wifiManager.getScanResults();
+        wifis = new String[wifiScanList.size()];
+        Log.e("WiFi", String.valueOf(wifiScanList.size()));
+        for (int i = 0; i < wifiScanList.size(); i++) {
+            mWifiRSSI.add(wifiScanList.get(i).level);
+            mWifiMacAddress.add(wifiScanList.get(i).BSSID);
+            Log.e("WiFi", String.valueOf(wifis[i]));
+        }
+        tvWifi1.setText(mWifiRSSI.toString());
+
+    }
 
     public interface SensorsListener {
         void LinearAccelerationData(float[] linearacceleration, long accTimestamp);
@@ -299,6 +328,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
         elevation = (TextView)view.findViewById(R.id.Elevation);
 
         textGPS = (TextView) view.findViewById(R.id.tvGPS);
+        tvWifi1 = (TextView)view.findViewById(R.id.tvWifiRRSI);
+        tvWifi2 = (TextView)view.findViewById(R.id.tvWifiBSSID);
 /*
         ImageView btMenu = view.findViewById(R.id.btMenu);
         btMenu.setOnClickListener(new View.OnClickListener() {
@@ -604,7 +635,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         sensorManager.registerListener(this,gravitySensor,10000);
         sensorManager.registerListener(this, linearAccelerationSensor, 10000);
         //Register the sensor when user returns to the activity
-        getContext().registerReceiver(wifiScanReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+      //  getContext().registerReceiver(wifiScanReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         // locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         //wifiManager.startScan();
     }
@@ -614,7 +645,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
         //Disable all sensors
         super.onPause();
         sensorManager.unregisterListener(this);
-        getContext().unregisterReceiver(wifiScanReciever);
+        stopWifiScanning();
+       // getContext().unregisterReceiver(wifiScanReciever);
         // locationManager.removeUpdates(this);
         // wifiManager.stopScan();
     }
@@ -668,7 +700,10 @@ public class task1sensors extends Fragment implements SensorEventListener,
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,locationListener);
 
         //Wifi manager
-        wifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
+
+        startWifiScanning();
+        /*
+                wifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
         if(wifiManager.getWifiState()==wifiManager.WIFI_STATE_DISABLED) {
             wifiManager.setWifiEnabled(true);
         }
@@ -677,12 +712,14 @@ public class task1sensors extends Fragment implements SensorEventListener,
         wifiManager.startScan();
         //Toast.makeText(getContext(), "Scanning WIFI ...", Toast.LENGTH_SHORT).show();
 
-        if(wifiManager.getWifiState()==wifiManager.WIFI_STATE_ENABLED) {
+                if(wifiManager.getWifiState()==wifiManager.WIFI_STATE_ENABLED) {
             wifiManager.getConnectionInfo().getSSID();
             wifiManager.getConnectionInfo().getBSSID();
             wifiManager.getConnectionInfo().getFrequency();
             wifiManager.getConnectionInfo().getRssi();
         }
+
+         */
 
         //-----------------------Sensor manager--------------------------//
         sensorManager = (SensorManager)getActivity().getSystemService(Context.SENSOR_SERVICE);
