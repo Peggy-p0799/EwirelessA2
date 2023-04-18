@@ -62,6 +62,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     private Sensor proximitySensor;
     private Sensor gravitySensor;
     private Sensor linearAccelerationSensor;
+    private Sensor rotationvector;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private WifiManager wifiManager;
@@ -114,6 +115,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     float[] gyroValues = new float[3];
     float gravityValues = 0;
     float[] rawAcceleration = new float[3];
+    float[] rotationvectorValues = new float[4];
     float[] linearAcceleration = new float[3];
 
     float gyroIntValue;
@@ -124,7 +126,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
     int plotCode = 99;
     boolean stopPlot = true;
     //Sensor timeStamp
-    long accTimestamp, magTimestamp, gyrTimestamp, barTimestamp, prxTimestamp, lightTimestamp, gravityTimestamp, linearAccelerationTimestamp;
+    long accTimestamp, magTimestamp, gyrTimestamp, barTimestamp, prxTimestamp, lightTimestamp, gravityTimestamp, linearAccelerationTimestamp, vecTimestamp;
     double lastTimestamp = 0;
     double mLastXvalue = 0;
     boolean timeRecord = false;
@@ -294,6 +296,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
     }
 
     public interface SensorsListener {
+        void LocationData(double tlat, double tlong, double altitude, double accuracy, double speed, String provider);
+        void AccelerometerData(float[] accelerometer, long accTimestamp);
         void LinearAccelerationData(float[] linearacceleration, long accTimestamp);
         void GravityData(float[] gravity, long accTimestamp);
         void GyroscopeData(float[] gyroValues, long gyrTimestamp);
@@ -301,6 +305,15 @@ public class task1sensors extends Fragment implements SensorEventListener,
         void PressureData(float barValue, long barTimestamp);
         void ProximityData(float prxValue, long prxTimestamp);
         void AmbientLightData(float lightValue, long lightTimestamp);
+        void RotationVectorData(float[] rotationvectorValues, long vecTimestamp);
+
+        // Sensor info
+        void AccelerometerInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void GyroscopeInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void RotationVectorInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void MagnetometerInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void BarometerInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void LightSensorInfo(String name, String vendor, double resolution, double power, float version, float type);
     }
 
     @Override
@@ -380,7 +393,18 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
 
             accTimestamp = sensorEvent.timestamp;
+            activitycommander.AccelerometerData(rawAcceleration, accTimestamp);
 
+        }
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+
+            rotationvectorValues[0] = sensorEvent.values[0];
+            rotationvectorValues[1] = sensorEvent.values[1];
+            rotationvectorValues[2] = sensorEvent.values[2];
+            rotationvectorValues[3] = sensorEvent.values[3];
+
+            vecTimestamp = sensorEvent.timestamp;
+            activitycommander.RotationVectorData(rotationvectorValues, vecTimestamp);
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_GRAVITY) {
             gravity = sensorEvent.values;
@@ -634,6 +658,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         sensorManager.registerListener(this, proximitySensor, 10000);
         sensorManager.registerListener(this,gravitySensor,10000);
         sensorManager.registerListener(this, linearAccelerationSensor, 10000);
+        sensorManager.registerListener(this, rotationvector, 10000);
         //Register the sensor when user returns to the activity
       //  getContext().registerReceiver(wifiScanReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         // locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
@@ -672,6 +697,12 @@ public class task1sensors extends Fragment implements SensorEventListener,
                     double tlat = location.getLatitude();
                     double tlong = location.getLongitude();
                     double Elevation = location.getAltitude();
+                    double Accuracy = location.getAccuracy();
+                    double Speed = location.getSpeed();
+                    String Provider = location.getProvider();
+
+                    activitycommander.LocationData(tlat, tlong, Elevation, Accuracy, Speed, Provider);
+
                     tlat = (double)Math.round(tlat * 100000d) / 100000d;
                     tlong = (double)Math.round(tlong * 100000d) / 100000d;
                     Elevation = (double)Math.round(Elevation * 1000d) / 1000d;
@@ -732,32 +763,40 @@ public class task1sensors extends Fragment implements SensorEventListener,
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        rotationvector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
 
         if (accelerometer != null){
-
             accPower = accelerometer.getPower();
             accRange = accelerometer.getMaximumRange();
             accResolution = accelerometer.getResolution();
             accMinDelay= accelerometer.getMinDelay();
+
+            activitycommander.AccelerometerInfo(accelerometer.getName(), accelerometer.getVendor(), accResolution, accPower, accelerometer.getVersion(), accelerometer.getType());
         }
         if(magnetometer != null){
             magPower = magnetometer.getPower();
             magRange = magnetometer.getMaximumRange();
             magResolution = magnetometer.getResolution();
             magMinDelay= magnetometer.getMinDelay();
+
+            activitycommander.MagnetometerInfo(magnetometer.getName(), magnetometer.getVendor(), magResolution, magPower, magnetometer.getVersion(), magnetometer.getType());
         }
         if(gyroscope != null){
             gyrPower = gyroscope.getPower();
             gyrRange = gyroscope.getMaximumRange();
             gyrResolution = gyroscope.getResolution();
             gyrMinDelay= gyroscope.getMinDelay();
+
+            activitycommander.GyroscopeInfo(gyroscope.getName(), gyroscope.getVendor(), gyrResolution, gyrPower, gyroscope.getVersion(), gyroscope.getType());
         }
         if(barometer != null){
             barPower = barometer.getPower();
             barRange = barometer.getMaximumRange();
             barResolution = barometer.getResolution();
             barMinDelay= barometer.getMinDelay();
+
+            activitycommander.BarometerInfo(barometer.getName(), barometer.getVendor(), barResolution, barPower, barometer.getVersion(), barometer.getType());
         }
         if(proximitySensor != null){
             prxPower = proximitySensor.getPower();
@@ -770,6 +809,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
             lightRange = ambientLightSensor.getMaximumRange();
             lightResolution = ambientLightSensor.getResolution();
             lightMinDelay= ambientLightSensor.getMinDelay();
+
+            activitycommander.LightSensorInfo(ambientLightSensor.getName(), ambientLightSensor.getVendor(), lightResolution, lightPower, ambientLightSensor.getVersion(), ambientLightSensor.getType());
         }
 
         if(gravitySensor != null){
@@ -777,6 +818,11 @@ public class task1sensors extends Fragment implements SensorEventListener,
             gravityRange = gravitySensor.getMaximumRange();
             gravityResolution = gravitySensor.getResolution();
             gravityMinDelay= gravitySensor.getMinDelay();
+        }
+
+        if(rotationvector != null){
+
+            activitycommander.RotationVectorInfo(rotationvector.getName(), rotationvector.getVendor(), rotationvector.getResolution(), rotationvector.getPower(), rotationvector.getVersion(), rotationvector.getType());
         }
 
     }

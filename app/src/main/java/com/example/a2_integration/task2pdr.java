@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -61,6 +62,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
     // Get access to sensors
     private SensorManager mSensorManager;
 
+    task2pdr.SensorsListener activitycommander;
+
 
     //________________________Var_________________________//
     private int displayHeight;
@@ -71,6 +74,18 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
     //Height offset from status bar needs to be cut for precise touch event on map canvas
     //Get status bar height here
+
+    public interface SensorsListener {
+        void PDRStatus(ToggleButton pdrToggleButton, long starttime);
+        void PDRData(float positionx, float positiony);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        activitycommander = (task2pdr.SensorsListener) activity;
+    }
+
 
     public int getStatusBarHeight() {
         int result = 0;
@@ -214,14 +229,18 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 if(pdrToggleButton.isChecked()){
                     // Initialise and start the PDR
                     startPDR();
+
+
                     //Enable the timer
                     startTime = System.currentTimeMillis();
+                    activitycommander.PDRStatus(pdrToggleButton, startTime);
                     timerHandler.postDelayed(timerRunnable, 0);
                     Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     // Stop the PDR
                     stopPDR();
+                    activitycommander.PDRStatus(pdrToggleButton, startTime);
                     //Disable the timer
                     timerHandler.removeCallbacks(timerRunnable);
                     Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();
@@ -650,6 +669,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // coordinates x (Right) and y (Down) respectively
         plotTrajectory(positionX,positionY);
         //trajectoryView.addPoint(577,437);
+
+        activitycommander.PDRData(positionX, positionY);
     }
 
     // Plot the step on the canvas
