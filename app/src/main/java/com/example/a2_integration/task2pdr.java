@@ -78,7 +78,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     //Get status bar height here
 
     public interface SensorsListener {
-        void PDRStatus(boolean pdrrunning, long starttime);
+        void PDRStatus(boolean pdrrunning, long starttime, long stoptime,byte building);
         void PDRData(float positionx, float positiony, int strideCount);
     }
 
@@ -188,6 +188,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
 
     long startTime = 0;
+    long stopTime = 0;
 
     //runs without a timer by reposting this handler at the end of the runnable
     Handler timerHandler = new Handler();
@@ -234,7 +235,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     pdrrunning = true;
                     //Enable the timer
                     startTime = System.currentTimeMillis();
-                    activitycommander.PDRStatus(pdrrunning, startTime);
+                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building);
                     timerHandler.postDelayed(timerRunnable, 0);
                     Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
                 }
@@ -242,7 +243,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     // Stop the PDR
                     stopPDR();
                     pdrrunning = false;
-                    activitycommander.PDRStatus(pdrrunning, startTime);
+                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building);
                     //Disable the timer
                     timerHandler.removeCallbacks(timerRunnable);
                     Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();

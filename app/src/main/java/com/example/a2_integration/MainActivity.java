@@ -262,9 +262,9 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
     // Listeners from Task 2 Fragment
 
     @Override
-    public void PDRStatus(boolean pdrrunning, long starttime) {
+    public void PDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building) {
         task3api apidata = (task3api) apifragment;
-        apidata.setPDRStatus(pdrrunning, starttime);
+        apidata.setPDRStatus(pdrrunning, starttime,stoptime,building);
     }
 
     @Override

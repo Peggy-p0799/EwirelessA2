@@ -11,9 +11,11 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -31,6 +33,8 @@ import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.util.Ent
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,9 +44,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -50,7 +57,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class task3api extends Fragment {
+public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickListener,swipeAdaptor.OnBtnLoadClickListener{
 
     // Declaration of Data Packet Variables
     Traj.Trajectory.Builder trajectory = Traj.Trajectory.newBuilder(); // Total Data Packet
@@ -71,6 +78,8 @@ public class task3api extends Fragment {
     Traj.Sensor_Info.Builder barometerinfo = Traj.Sensor_Info.newBuilder();
     Traj.Sensor_Info.Builder lightsensorinfo = Traj.Sensor_Info.newBuilder();
 
+    private static final String TAG = "Task3Activity";
+
     boolean accelerometerready = false;
     boolean gyroscopeready = false;
     boolean vectorrotationready = false;
@@ -78,6 +87,8 @@ public class task3api extends Fragment {
     int GlobalStrideCount = 0;
     long Globalstarttime = 0;
     boolean Globalpdrrunning = false;
+    long GlobalStopTime = 0;
+    byte GlobalBuilding = 0x0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,42 +98,89 @@ public class task3api extends Fragment {
 
     }
 
+    TextView binaryFileToString;
     RecyclerView trajectoryList;
     swipeAdaptor trajectorySwipeAdaptor;
 
     private ArrayList<String> myTrajectoryNum = new ArrayList<>();
     private ArrayList<String> myTrajectoryLocation = new ArrayList<>();
-    private ArrayList<String> myTrajectoryTimestamp = new ArrayList<>()
-            ;
+    private ArrayList<String> myTrajectoryTimestamp = new ArrayList<>();
+
+    private List<String> filePaths = new ArrayList<>();
+
+    private boolean isRunning = false;
+    int trajectoryNum = 0;
+    long previousTimestamp = 0;
+    long initialTimestamp = 0 ;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_task3api, container, false);
 
         trajectoryList = view.findViewById(R.id.trajectoryRecycler);
-        createList();
+        binaryFileToString = view.findViewById(R.id.tvProtoFile);
 
         if(trajectoryList!= null){
             trajectoryList.setLayoutManager(new LinearLayoutManager(getContext()));
             trajectoryList.addItemDecoration(new DividerItemDecoration(getContext(),LinearLayoutManager.VERTICAL));
-            trajectorySwipeAdaptor = new swipeAdaptor(getContext(),myTrajectoryNum,myTrajectoryLocation,myTrajectoryTimestamp);
+            trajectorySwipeAdaptor = new swipeAdaptor
+                    (getContext(),myTrajectoryNum,myTrajectoryLocation,myTrajectoryTimestamp,this,this);
             trajectoryList.setAdapter(trajectorySwipeAdaptor);
         }
+
+        isRunning = true;
+        previousTimestamp=Globalstarttime;
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(isRunning) {
+                    // do something here
+                    if(initialTimestamp==0){
+                        initialTimestamp = Globalstarttime; // Record the initial timestamp when user firstly hits start button
+                    }
+
+                    if((!Globalpdrrunning)&&(previousTimestamp!=Globalstarttime)){
+                        createList(trajectoryNum,GlobalBuilding,Globalstarttime,initialTimestamp);
+                        trajectoryNum++;
+                        previousTimestamp=Globalstarttime;
+                    }
+                }
+            }
+        }).start();
 
         return view;
     }
 
-    private void createList() {
-        for(int i = 0;i<20; i++){
-            myTrajectoryNum.add("Trajectory"+i);
-            myTrajectoryLocation.add("Location"+i);
-            myTrajectoryTimestamp.add("Timestamp"+i);
+    private void createList(int i, byte Building, long timestamp, long initialTimestamp) {
+
+        //Display current building of the user
+        String location;
+        if(Building == 0X0){
+            location = "Nucleus";
+        }else{
+            location = "Library";
         }
+
+        //Format timestamp before display on UI;
+        long millis = timestamp-initialTimestamp;
+        int seconds = (int) (millis / 1000);
+        int minutes = seconds / 60;
+        seconds = seconds % 60;
+        String formatTime = String.format("%d:%02d", minutes, seconds);
+
+            myTrajectoryNum.add("Trajectory "+i);
+            myTrajectoryLocation.add(location);
+            myTrajectoryTimestamp.add("Start time "+formatTime);
+            trajectorySwipeAdaptor.notifyDataSetChanged();
     }
 
-    public void setPDRStatus(boolean pdrrunning, long starttime) {
+    public void setPDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building) {
         Globalpdrrunning = pdrrunning;
         Globalstarttime = starttime;
+        GlobalStopTime = stoptime;
+        GlobalBuilding = building;
 
         if(Globalpdrrunning) {
             trajectory
@@ -139,26 +197,34 @@ public class task3api extends Fragment {
         }
         if(!(Globalpdrrunning)) {
             trajectory
-                .build();
+                    .build();
 
             // Bytes of Data from Trajectory
             byte[] bytes = trajectory.build().toByteArray();
+
             // Create and Write Data to Binary File, store in Downloads
-            File trajectorydata = null;
-            try {
-                trajectorydata = createBinaryFile();
-            } catch (IOException e) {
-                e.printStackTrace();
+            File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if(!directory.exists()){
+                directory.mkdirs();
             }
+            String filename = "trajectorydata_" + trajectoryNum + ".bin";
+            File trajectorydata = new File(directory, filename);
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(trajectorydata);
                 fos.write(bytes);
                 fos.flush();
                 fos.close();
+
+                // Store the path of the created file
+                String filePath = trajectorydata.getAbsolutePath();
+                filePaths.add("debug lines");
+                filePaths.add(filePath);
             } catch (IOException ex) {
                 ex.printStackTrace();
+                Log.e(TAG, "IOException occurred: " + ex.getMessage());
             }
+
 
             /*
             CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -251,6 +317,32 @@ public class task3api extends Fragment {
 
             trajectory = Traj.Trajectory.newBuilder(); // Reset Trajectory
         }
+    }
+
+    String srcdebug;
+    public String readBinaryFileToString(List<String> filePaths, int index) {
+        String filePath = filePaths.get(index);
+
+        byte[] bytes = new byte[0];
+        try {
+            // Read bytes from the binary file
+            FileInputStream fis = new FileInputStream(filePath);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] buf = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(buf)) != -1) {
+                bos.write(buf, 0, bytesRead);
+            }
+            bytes = bos.toByteArray();
+            fis.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        // Convert bytes to string
+        String str = new Scanner(new ByteArrayInputStream(bytes), "UTF-8").useDelimiter("\\A").next(); // convert bytes to string
+        srcdebug = "str";
+        return srcdebug;
     }
 
     public void setPDRData(float positionx, float positiony, int strideCount) {
@@ -468,6 +560,8 @@ public class task3api extends Fragment {
             .build();
     }
 
+    //Seems not using this function---------------//
+
     String currentBinaryPath;
     private File createBinaryFile() throws IOException {
         // Create an image file name
@@ -534,5 +628,18 @@ public class task3api extends Fragment {
                 break;
             }
         }
+    }
+
+    //Delete and load function to process trajectory data set
+
+    @Override
+    public void onDeleteClick(int position) {
+        Log.d(TAG, "onDeleteClick: delete button is clicked");
+    }
+
+    @Override
+    public void onLoadClick(int position) {
+        Log.d(TAG, "load button is clicked");
+        binaryFileToString.setText(readBinaryFileToString(filePaths,position)); // get string data
     }
 }

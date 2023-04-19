@@ -71,6 +71,38 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/protobuffer_bg" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/tvProtoFile"
+                android:text="debug:E/AndroidRuntime: FATAL EXCEPTION: main
+    Process: com.example.a2_integration, PID: 10758
+    java.lang.IndexOutOfBoundsException: Index: 2, Size: 2
+        at java.util.ArrayList.remove(ArrayList.java:503)
+        at com.example.a2_integration.swipeAdaptor$swipeViewHolder$2.onClick(swipeAdaptor.java:101)
+        at android.view.View.performClick(View.java:7140)
+        at android.view.View.performClickInternal(View.java:7117)
+        at android.view.View.access$3500(View.java:801)
+        at android.view.View$PerformClick.run(View.java:27351)
+        at android.os.Handler.handleCallback(Handler.java:883)
+        at android.os.Handler.dispatchMessage(Handler.java:100)
+        at android.os.Looper.loop(Looper.java:214)
+        at android.app.ActivityThread.main(ActivityThread.java:7356)
+        at java.lang.reflect.Method.invoke(Native Method)
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)"
+                android:textColor="@color/backgroundWhite"
+                android:layout_margin="10dp"
+                android:textSize="16sp"/>
+
+        </ScrollView>
+
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
