@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +39,9 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
     protected void onCreate(Bundle savedInstanceState) {
         // So user can always see the display
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         // This executes on creation of the app
         setTitle("Assignment 2"); // Title of this app is Compass+
@@ -242,19 +246,31 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         apidata.setLightSensorInfo(name, vendor, resolution, power, version, type);
     }
 
+    @Override
+    public void wifiData(long macaddress, int rssi, int i, int scanlistsize) {
+        task3api apidata = (task3api) apifragment;
+        apidata.setwifiData(macaddress, rssi, i, scanlistsize);
+    }
+
+    @Override
+    public void AccessPointData(long mac, String ssid, long frequency) {
+        task3api apidata = (task3api) apifragment;
+        apidata.setAccessPointData(mac, ssid, frequency);
+    }
+
     // **********************************************//
     // Listeners from Task 2 Fragment
 
     @Override
-    public void PDRStatus(ToggleButton pdrToggleButton, long starttime) {
+    public void PDRStatus(boolean pdrrunning, long starttime) {
         task3api apidata = (task3api) apifragment;
-        apidata.setPDRStatus(pdrToggleButton, starttime);
+        apidata.setPDRStatus(pdrrunning, starttime);
     }
 
     @Override
-    public void PDRData(float positionx, float positiony) {
+    public void PDRData(float positionx, float positiony, int strideCount) {
         task3api apidata = (task3api) apifragment;
-        apidata.setPDRData(positionx, positiony);
+        apidata.setPDRData(positionx, positiony, strideCount);
     }
 
 

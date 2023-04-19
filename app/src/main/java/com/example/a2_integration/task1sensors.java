@@ -275,6 +275,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
     TextView tvWifi1;
     TextView tvWifi2;
+
     private void scanForWifi() {
         wifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
 
@@ -284,14 +285,36 @@ public class task1sensors extends Fragment implements SensorEventListener,
         // Get the list of available Wi-Fi networks
         List<ScanResult> scanResults = wifiManager.getScanResults();
         List<ScanResult> wifiScanList = wifiManager.getScanResults();
+        WifiInfo wifiinfo = wifiManager.getConnectionInfo();
+        String ssid = wifiinfo.getSSID();
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        String[] split1 = wifiinfo.getMacAddress().split(":");
+        StringBuilder builder1 = new StringBuilder();
+        builder1.append(split1[0]);builder1.append(split1[1]);builder1.append(split1[2]);builder1.append(split1[3]);builder1.append(split1[4]);builder1.append(split1[5]);
+        long mac = Long.parseLong(builder1.toString(), 16);
+
+        long frequency = wifiinfo.getFrequency();
+        activitycommander.AccessPointData(mac, ssid, frequency);
+
+
         wifis = new String[wifiScanList.size()];
         Log.e("WiFi", String.valueOf(wifiScanList.size()));
         for (int i = 0; i < wifiScanList.size(); i++) {
             mWifiRSSI.add(wifiScanList.get(i).level);
             mWifiMacAddress.add(wifiScanList.get(i).BSSID);
+
+            String[] split2 = wifiinfo.getMacAddress().split(":");
+            StringBuilder builder2 = new StringBuilder();
+            builder2.append(split2[0]);builder2.append(split2[1]);builder2.append(split2[2]);builder2.append(split2[3]);builder2.append(split2[4]);builder2.append(split2[5]);
+
+            activitycommander.wifiData(Long.parseLong(builder2.toString(), 16), wifiScanList.get(i).level, i, wifiScanList.size());
+
             Log.e("WiFi", String.valueOf(wifis[i]));
         }
-        tvWifi1.setText(mWifiRSSI.toString());
+        tvWifi2.setText(""+mac);
 
     }
 
@@ -306,6 +329,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
         void ProximityData(float prxValue, long prxTimestamp);
         void AmbientLightData(float lightValue, long lightTimestamp);
         void RotationVectorData(float[] rotationvectorValues, long vecTimestamp);
+
+        void wifiData(long macaddress, int rssi, int i, int scanlistsize);
+        void AccessPointData(long mac, String ssid, long frequency);
 
         // Sensor info
         void AccelerometerInfo(String name, String vendor, double resolution, double power, float version, float type);

@@ -72,12 +72,14 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private boolean doPDR = false;
     private boolean resetPDR = false;
 
+    boolean pdrrunning = false;
+
     //Height offset from status bar needs to be cut for precise touch event on map canvas
     //Get status bar height here
 
     public interface SensorsListener {
-        void PDRStatus(ToggleButton pdrToggleButton, long starttime);
-        void PDRData(float positionx, float positiony);
+        void PDRStatus(boolean pdrrunning, long starttime);
+        void PDRData(float positionx, float positiony, int strideCount);
     }
 
     @Override
@@ -229,18 +231,18 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 if(pdrToggleButton.isChecked()){
                     // Initialise and start the PDR
                     startPDR();
-
-
+                    pdrrunning = true;
                     //Enable the timer
                     startTime = System.currentTimeMillis();
-                    activitycommander.PDRStatus(pdrToggleButton, startTime);
+                    activitycommander.PDRStatus(pdrrunning, startTime);
                     timerHandler.postDelayed(timerRunnable, 0);
                     Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     // Stop the PDR
                     stopPDR();
-                    activitycommander.PDRStatus(pdrToggleButton, startTime);
+                    pdrrunning = false;
+                    activitycommander.PDRStatus(pdrrunning, startTime);
                     //Disable the timer
                     timerHandler.removeCallbacks(timerRunnable);
                     Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();
@@ -670,7 +672,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         plotTrajectory(positionX,positionY);
         //trajectoryView.addPoint(577,437);
 
-        activitycommander.PDRData(positionX, positionY);
+        activitycommander.PDRData(positionX, positionY, strideCount);
     }
 
     // Plot the step on the canvas
