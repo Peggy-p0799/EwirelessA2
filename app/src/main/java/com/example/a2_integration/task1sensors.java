@@ -176,24 +176,33 @@ public class task1sensors extends Fragment implements SensorEventListener,
             int coarseLocationPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
             int fineLocationPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
             int internetPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.INTERNET);
+            int readPermission = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.READ_EXTERNAL_STORAGE);
+            int writePermission = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int cameraPermission = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA);
+
 
             if (wifiAccessPermission != PackageManager.PERMISSION_GRANTED ||
                     wifiAChangePermission != PackageManager.PERMISSION_GRANTED ||
                     coarseLocationPermission != PackageManager.PERMISSION_GRANTED ||
-                    fineLocationPermission != PackageManager.PERMISSION_GRANTED) {
+                    fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
+                    writePermission != PackageManager.PERMISSION_GRANTED ||
+                    readPermission != PackageManager.PERMISSION_GRANTED ||
+                    cameraPermission != PackageManager.PERMISSION_GRANTED) {
                 //if dont have permission so prompt the user
                 this.requestPermissions(
                         new String[]{
                                 android.Manifest.permission.ACCESS_WIFI_STATE,
                                 android.Manifest.permission.CHANGE_WIFI_STATE,
                                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                                android.Manifest.permission.ACCESS_FINE_LOCATION},
+                                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                                android.Manifest.permission.CAMERA},
                         REQUEST_ID_READ_WRITE_PERMISSION
 
                 );
                 return;
             }
-
             if (coarseLocationPermission != PackageManager.PERMISSION_GRANTED ||
                     internetPermission != PackageManager.PERMISSION_GRANTED ||
                     fineLocationPermission != PackageManager.PERMISSION_GRANTED) {
@@ -231,7 +240,6 @@ public class task1sensors extends Fragment implements SensorEventListener,
                 }
                 break;
             }
-
             case REQUEST_ID_Location_PERMISSION: {
                 //If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 1
@@ -679,9 +687,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
         sensorManager.registerListener(this, accelerometer, 10000);
         sensorManager.registerListener(this, gyroscope, 10000);
         sensorManager.registerListener(this, magnetometer, 10000);
-        sensorManager.registerListener(this, barometer, 10000);
-        sensorManager.registerListener(this, ambientLightSensor, 10000);
-        sensorManager.registerListener(this, proximitySensor, 10000);
+        sensorManager.registerListener(this, barometer, 100);
+        sensorManager.registerListener(this, ambientLightSensor, 100);
+        sensorManager.registerListener(this, proximitySensor, 100);
         sensorManager.registerListener(this,gravitySensor,10000);
         sensorManager.registerListener(this, linearAccelerationSensor, 10000);
         sensorManager.registerListener(this, rotationvector, 10000);

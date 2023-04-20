@@ -78,7 +78,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     //Get status bar height here
 
     public interface SensorsListener {
-        void PDRStatus(boolean pdrrunning, long starttime, long stoptime,byte building);
+        void PDRStatus(boolean pdrrunning, long starttime, long stoptime,byte building,long currenttime);
         void PDRData(float positionx, float positiony, int strideCount);
     }
 
@@ -235,7 +235,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     pdrrunning = true;
                     //Enable the timer
                     startTime = System.currentTimeMillis();
-                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building);
+                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.currentTimeMillis());
                     timerHandler.postDelayed(timerRunnable, 0);
                     Toast.makeText(getContext(), "pdr started", Toast.LENGTH_SHORT).show();
                 }
@@ -243,7 +243,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     // Stop the PDR
                     stopPDR();
                     pdrrunning = false;
-                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building);
+                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.currentTimeMillis());
                     //Disable the timer
                     timerHandler.removeCallbacks(timerRunnable);
                     Toast.makeText(getContext(), "pdr stopped", Toast.LENGTH_SHORT).show();
@@ -565,6 +565,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         updateFloorplan();
 
         isBarometerReady = true;
+
+        activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.currentTimeMillis()); // checking whether 10 minutes has elapsed - every 1s
     }
 
     public void setAmbientLight(float lightValue, long lightTimestamp) {

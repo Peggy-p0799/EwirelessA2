@@ -3,18 +3,21 @@ package com.example.a2_integration;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.material.navigation.NavigationView;
@@ -262,9 +265,9 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
     // Listeners from Task 2 Fragment
 
     @Override
-    public void PDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building) {
+    public void PDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building, long currenttime) {
         task3api apidata = (task3api) apifragment;
-        apidata.setPDRStatus(pdrrunning, starttime,stoptime,building);
+        apidata.setPDRStatus(pdrrunning, starttime,stoptime,building,currenttime);
     }
 
     @Override

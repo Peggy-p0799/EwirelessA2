@@ -122,7 +122,7 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
                 @Override
                 public void onClick(View v) {
                     uploadClickListener.onUploadClick(getAdapterPosition());
-                    Toast.makeText(context, "Upload this trajectory", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Upload Trajectory Started", Toast.LENGTH_SHORT).show();
                 }
             });
             //Handling the click events
