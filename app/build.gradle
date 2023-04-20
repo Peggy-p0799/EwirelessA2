@@ -5,6 +5,14 @@ plugins {
 
 android {
     compileSdk 32
+    useLibrary 'org.apache.http.legacy'
+    useLibrary  'org.apache.http.legacy'
+    packagingOptions {
+        pickFirst  'META-INF/*'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+    }
 
     defaultConfig {
         applicationId "com.example.a2_integration"
@@ -38,6 +46,11 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.5.3'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    implementation 'org.apache.httpcomponents:httpmime:4.3.6'
+    implementation 'org.apache.httpcomponents:httpcore:4.3.3'
+
+
     //noinspection GradleCompatible
     implementation 'com.android.support:preference-v7:26.1.0'
     testImplementation 'junit:junit:4.+'
@@ -54,7 +67,6 @@ dependencies {
 
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.google.protobuf:protobuf-java:3.22.2'
-    implementation 'com.google.firebase:firebase-crashlytics-buildtools:2.9.4'
 
     //glide
     implementation 'com.github.bumptech.glide:glide:4.4.0'
