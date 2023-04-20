@@ -26,9 +26,13 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
     public interface OnBtnLoadClickListener {
         void onLoadClick( int position);
     }
+    public interface OnBtnUploadClickListener {
+        void onUploadClick( int position);
+    }
 
     private OnBtnDeleteClickListener btnDeleteListener;
     private OnBtnLoadClickListener btnLoadListener;
+    private OnBtnUploadClickListener btnUploadListener;
 
     private Context context;
     private ArrayList<String> mTrajectoryNum = new ArrayList<>();
@@ -39,12 +43,13 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
 
     public swipeAdaptor(Context context,ArrayList<String> trajectoryNum,
                         ArrayList<String> trajectoryLocation,ArrayList<String> trajectoryTimestamp,
-                        OnBtnDeleteClickListener btnDelete, OnBtnLoadClickListener btnLoad){
+                        OnBtnDeleteClickListener btnDelete, OnBtnLoadClickListener btnLoad,OnBtnUploadClickListener btnUpload){
         if(trajectoryNum != null) mTrajectoryNum = trajectoryNum;
         if(trajectoryLocation!= null) mTrajectoryLocation = trajectoryLocation;
         if(trajectoryTimestamp!= null) mTrajectoryTimestamp = trajectoryTimestamp;
         if(btnDelete != null) btnDeleteListener = btnDelete;
         if(btnDelete != null) btnLoadListener = btnLoad;
+        if(btnUpload != null) btnUploadListener = btnUpload;
         this.context = context;
     }
 
@@ -55,7 +60,7 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
     @Override
     public swipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_trajectoryview, parent, false);
-        return new swipeViewHolder(view,btnDeleteListener,btnLoadListener);
+        return new swipeViewHolder(view,btnDeleteListener,btnLoadListener,btnUploadListener);
     }
 
     @Override
@@ -71,6 +76,7 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
 
         holder.tvDelete.setTag(position);
         holder.tvLoad.setTag(position);
+        holder.tvUpload.setTag(position);
 
 
     }
@@ -88,14 +94,16 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
         private  TextView trajectoryTimestamp;
         private TextView tvLoad;
         private  TextView tvDelete;
+        private  TextView tvUpload;
 
         private SwipeRevealLayout swipeRevealLayout;
 
         OnBtnLoadClickListener loadClickListener;
         OnBtnDeleteClickListener deleteClickListener;
+        OnBtnUploadClickListener uploadClickListener;
 
         public swipeViewHolder(@NonNull View itemView,OnBtnDeleteClickListener btnDeleteClickListener,
-                               OnBtnLoadClickListener btnLoadClickListener) {
+                               OnBtnLoadClickListener btnLoadClickListener,OnBtnUploadClickListener btnUploadClickListener) {
             super(itemView);
 
             trajectoryNum = itemView.findViewById(R.id.tvTrajectoryNum);
@@ -103,11 +111,20 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
             trajectoryTimestamp = itemView.findViewById(R.id.tvTrajectoryTime);
             tvLoad = itemView.findViewById(R.id.tvLoad);
             tvDelete = itemView.findViewById(R.id.tvDelete);
+            tvUpload = itemView.findViewById(R.id.tvUpload);
             swipeRevealLayout = itemView.findViewById(R.id.swipeLayout);
 
             this.deleteClickListener=btnDeleteClickListener;
             this.loadClickListener=btnLoadClickListener;
+            this.uploadClickListener = btnUploadClickListener;
 
+            tvUpload.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    uploadClickListener.onUploadClick(getAdapterPosition());
+                    Toast.makeText(context, "Upload this trajectory", Toast.LENGTH_SHORT).show();
+                }
+            });
             //Handling the click events
             tvLoad.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -121,12 +138,6 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
                 @Override
                 public void onClick(View view) {
                     int position = (int) view.getTag();
-                    if (position >= 0 && position < mTrajectoryNum.size()){
-                        mTrajectoryNum.remove(position);
-                        mTrajectoryLocation.remove(position);
-                        mTrajectoryTimestamp.remove(position);
-                        notifyItemRemoved(position);
-                    }
                     deleteClickListener.onDeleteClick(getAdapterPosition());
                     Toast.makeText(context, "Delete this trajectory", Toast.LENGTH_SHORT).show();
                 }

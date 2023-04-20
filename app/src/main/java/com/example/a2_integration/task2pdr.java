@@ -654,7 +654,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     // Estimate the step length, based on [Weinberg, 2002]
     private void weinbergSL() {
         //final float K = 0.364f; // Constant dependent on person and walking mode
-        final float K = 0.65f; // Constant dependent on person and walking mode
+        final float K = 0.7f; // Constant dependent on person and walking mode
 
         // Apply the Weinberg formula
         strideLength = (float) (Math.pow((accVerticalMax-accVerticalMin),(1.0/4))*K*K);

@@ -49,7 +49,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickListener,swipeAdaptor.OnBtnLoadClickListener{
+public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickListener,
+        swipeAdaptor.OnBtnLoadClickListener, swipeAdaptor.OnBtnUploadClickListener{
 
     // Declaration of Data Packet Variables
     Traj.Trajectory.Builder trajectory = Traj.Trajectory.newBuilder(); // Total Data Packet
@@ -122,7 +123,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             trajectoryList.setLayoutManager(new LinearLayoutManager(getContext()));
             trajectoryList.addItemDecoration(new DividerItemDecoration(getContext(),LinearLayoutManager.VERTICAL));
             trajectorySwipeAdaptor = new swipeAdaptor
-                    (getContext(),myTrajectoryNum,myTrajectoryLocation,myTrajectoryTimestamp,this,this);
+                    (getContext(),myTrajectoryNum,myTrajectoryLocation,myTrajectoryTimestamp,this,this,this);
             trajectoryList.setAdapter(trajectorySwipeAdaptor);
         }
 
@@ -607,6 +608,12 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             }
         }
     }
+    //Upload trajectory to the cloud
+
+    @Override
+    public void onUploadClick(int position) {
+        Log.d(TAG, "onUploadClick: upload button is clicked");
+    }
 
     //Delete and load function to process trajectory data set
     @Override
@@ -614,7 +621,15 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
         Log.d(TAG, "onDeleteClick: delete button is clicked");
         refreshListView();
 
-        fileList.get(position+1).delete();
+
+        if(position>=0 && position<myTrajectoryNum.size()){
+            myTrajectoryNum.remove(position);
+           // trajectoryList.removeViewAt(position);
+            trajectorySwipeAdaptor.notifyItemRemoved(position);
+            trajectorySwipeAdaptor.notifyItemRangeChanged(position, myTrajectoryNum.size());
+        }
+            //   notifyItemRangeChanged(position, getItemCount() - position);
+        fileList.get(position).delete();
 
         refreshListView();
 
@@ -661,4 +676,5 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             }
         }
     }
+
 }

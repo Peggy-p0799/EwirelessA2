@@ -27,6 +27,18 @@
             android:gravity="center"/>
 
         <TextView
+            android:id="@+id/tvUpload"
+            android:layout_width="100dp"
+            android:background="@color/grassGreen"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="UPLOAD"
+            android:textColor="@color/backgroundWhite"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"/>
+
+        <TextView
             android:id="@+id/tvDelete"
             android:layout_width="100dp"
             android:background="#790606"
@@ -37,6 +49,7 @@
             android:textStyle="bold"
             android:textSize="18sp"
             android:gravity="center"/>
+
     </LinearLayout>
 
 
