@@ -11,6 +11,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+/** This class is used to draw the PDR trajectory on a canvas so it can be visualised.
+ */
 public class myCanvas extends View {
 
     private Paint mPaint;
