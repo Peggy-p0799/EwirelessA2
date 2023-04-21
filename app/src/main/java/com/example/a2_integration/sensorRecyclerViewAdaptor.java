@@ -18,6 +18,10 @@ import java.util.ArrayList;
 
 public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecyclerViewAdaptor.ViewHolder>{
 
+    //This is adaptor for the sensor inform display recyclerview as part of task 1 UI
+    //User will be able to view information of all sensors and
+    //plot real time data from specified sensors:
+
     /***************** Initialisation *************************/
 
     private static final String TAG = "RecyclerViewAdapter";

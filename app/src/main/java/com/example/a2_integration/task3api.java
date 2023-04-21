@@ -32,6 +32,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/** This fragment receives, formats and stores all data into trajectory class as required
+ * and sends them to the cloud.
+ *
+ * Fundamental Features include:
+ *  - Collect all data inform as required
+ *  - Automatically upload trajectory to the cloud every 10 minutes (?? may be not that accurate
+ *
+ * Extra Features include:
+ * - segment the trajectories into 10 min sections and prepare them for sending.
+ * - Store and access previous trajectories for viewing.
+ * - UI allows the user check local trajectory, preview trajectory inform and manually upload trajectory to the cloud.
+ */
+
 public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickListener,
         swipeAdaptor.OnBtnLoadClickListener, swipeAdaptor.OnBtnUploadClickListener{
 
@@ -104,10 +117,16 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_task3api, container, false);
+
         // UI Views (text view for data file preview and swipe adapter for data file list)
+
         trajectoryList = view.findViewById(R.id.trajectoryRecycler);
         binaryFileToString = view.findViewById(R.id.tvProtoFile);
+
         // Setting layout of swipe adapter list
+        // Check out the layout file of customised swipe recyclerview: layout_trajectoryView.xml
+        // Check out the adaptor for this recyclerview: swipeAdaptor.java
+
         if(trajectoryList!= null){
             trajectoryList.setLayoutManager(new LinearLayoutManager(getContext()));
             trajectoryList.addItemDecoration(new DividerItemDecoration(getContext(),LinearLayoutManager.VERTICAL));
@@ -115,6 +134,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
                     (getContext(),myTrajectoryNum,myTrajectoryLocation,myTrajectoryTimestamp,this,this,this);
             trajectoryList.setAdapter(trajectorySwipeAdaptor);
         }
+
         // Set flag to true
         isRunning = true;
         previousTimestamp=Globalstarttime;

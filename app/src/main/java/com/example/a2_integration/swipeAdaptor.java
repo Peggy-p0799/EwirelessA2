@@ -17,9 +17,15 @@ import java.util.ArrayList;
 
 public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHolder> {
 
+    //This is adaptor for the swipe recyclerview as part of task 3 UI
+    //User will be able to view all trajectory recorded locally and
+    //Swipe left and click three buttons to access functions:
+    //"Delete", "Upload", "Load" any trajectory
+
+
+    /***************** Initialisation *************************/
 
     //Define the interface for button click listener
-
     public interface OnBtnDeleteClickListener {
         void onDeleteClick( int position);
     }
@@ -41,6 +47,8 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
 
     private final ViewBinderHelper viewBinderHelper= new ViewBinderHelper();
 
+    /***************** Adaptor structure *************************/
+
     public swipeAdaptor(Context context,ArrayList<String> trajectoryNum,
                         ArrayList<String> trajectoryLocation,ArrayList<String> trajectoryTimestamp,
                         OnBtnDeleteClickListener btnDelete, OnBtnLoadClickListener btnLoad,OnBtnUploadClickListener btnUpload){
@@ -56,12 +64,16 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
     public void setTrajectory(){
         notifyDataSetChanged();
     }
+
+    /***************** View holder methods *************************/
+
     @NonNull
     @Override
     public swipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_trajectoryview, parent, false);
         return new swipeViewHolder(view,btnDeleteListener,btnLoadListener,btnUploadListener);
     }
+
 
     @Override
     public void onBindViewHolder(@NonNull swipeViewHolder holder, int position) {
@@ -86,6 +98,7 @@ public class swipeAdaptor extends RecyclerView.Adapter<swipeAdaptor.swipeViewHol
         return mTrajectoryNum.size();
     }
 
+    /***************** View holder Customisation *************************/
 
     class swipeViewHolder extends RecyclerView.ViewHolder{
 

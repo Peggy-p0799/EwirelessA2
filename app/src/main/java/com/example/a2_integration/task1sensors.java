@@ -48,10 +48,26 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.util.ArrayList;
 import java.util.List;
 
+/** This fragment initialises all sensors and collect data from each of them.
+ *
+ *  Fundamental features include:
+ *  - Sensor initialisation
+ *  - Sensor data gathering
+ *  - Sensor data transferred to other fragments/ activity to further process PDR & be sent to cloud.
+ *
+ *  Extra features:
+ *  - Real-time sensor data visualisation
+ *  - Sensor inform display
+ */
+
 public class task1sensors extends Fragment implements SensorEventListener,
         sensorRecyclerViewAdaptor.OnButton1ClickListener, sensorRecyclerViewAdaptor.OnButton2ClickListener {
 
+    /************************** Debug definition ***************************/
+
     private static final String TAG = "Task1Activity";
+
+    /************************** Sensor definition ***************************/
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -73,8 +89,6 @@ public class task1sensors extends Fragment implements SensorEventListener,
     private final ArrayList<String> mSensorMinDelay = new ArrayList<>();
     private final ArrayList<String> mSensorPower = new ArrayList<>();
     private final ArrayList<String> mSensorRange = new ArrayList<>();
-    private final ArrayList<String> mbtPlot = new ArrayList<>();
-    private final ArrayList<String> mbtStop = new ArrayList<>();
 
 
     /************************** Class definition ***************************/
@@ -92,10 +106,10 @@ public class task1sensors extends Fragment implements SensorEventListener,
     TextView xValues, yValue, zValue, AbsValue;
     TextView proximity, lightsensor, elevation;
 
+    /************************** General Var definition ***************************/
+
     //WIFI
     String wifis[];
-    ListView lv;
-
     String coord, coord2;
 
     float linearAccelerometerValues = 0;
@@ -122,16 +136,23 @@ public class task1sensors extends Fragment implements SensorEventListener,
     float barValue;
     float lightValue;
     float prxValue;
-    int pointsPlotted = 5;
     int plotCode = 99;
     boolean stopPlot = true;
     //Sensor timeStamp
-    long accTimestamp, magTimestamp, gyrTimestamp, barTimestamp, prxTimestamp, lightTimestamp, gravityTimestamp, linearAccelerationTimestamp, vecTimestamp;
+    long accTimestamp, magTimestamp, gyrTimestamp, barTimestamp, prxTimestamp,
+            lightTimestamp, gravityTimestamp, linearAccelerationTimestamp, vecTimestamp;
     double lastTimestamp = 0;
     double mLastXvalue = 0;
     boolean timeRecord = false;
-    boolean plotrunning = false;
 
+    // Constants for plot sampling
+    private final int SENSOR_RATE = 100; // Hz
+    private final int TARGET_RATE = 5; // Hz
+    private final int SAMPLE_PERIOD_MS = 1000 / TARGET_RATE; // Milliseconds
+
+    // Variables for plot sampling
+    private float[] mSensorBuffer = new float[SENSOR_RATE / TARGET_RATE];
+    private int mSensorBufferIndex = 0;
 
     LineGraphSeries<DataPoint> accSeries = new LineGraphSeries<DataPoint>(new DataPoint[]{
             new DataPoint(0, 1),
@@ -162,11 +183,51 @@ public class task1sensors extends Fragment implements SensorEventListener,
             new DataPoint(4, 6)
     });
 
+    /************************** Command definition ***************************/
+
+    //This listener passes sensor data between different fragments and activity
+
+    public interface SensorsListener {
+
+        void LocationData(double tlat, double tlong, double altitude, double accuracy, double speed, String provider);
+        void AccelerometerData(float[] accelerometer, long accTimestamp);
+        void LinearAccelerationData(float[] linearacceleration, long accTimestamp);
+        void GravityData(float[] gravity, long accTimestamp);
+        void GyroscopeData(float[] gyroValues, long gyrTimestamp);
+        void MagnetometerData(float[] magneticFieldValues, long magTimestamp);
+        void PressureData(float barValue, long barTimestamp);
+        void ProximityData(float prxValue, long prxTimestamp);
+        void AmbientLightData(float lightValue, long lightTimestamp);
+        void RotationVectorData(float[] rotationvectorValues, long vecTimestamp);
+
+        void wifiData(long macaddress, int rssi, int i, int scanlistsize);
+        void AccessPointData(long mac, String ssid, long frequency);
+
+        // Sensor info
+        void AccelerometerInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void GyroscopeInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void RotationVectorInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void MagnetometerInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void BarometerInfo(String name, String vendor, double resolution, double power, float version, float type);
+        void LightSensorInfo(String name, String vendor, double resolution, double power, float version, float type);
+    }
 
     SensorsListener activitycommander;
 
+    //Permission constant
     private static final int REQUEST_ID_READ_WRITE_PERMISSION = 99;
     private static final int REQUEST_ID_Location_PERMISSION = 100;
+
+    //Wifi scan vars
+    private final ArrayList<Integer> mWifiRSSI = new ArrayList<>();
+    private final ArrayList<String> mWifiMacAddress = new ArrayList<>();
+    private static final int WIFI_SCAN_INTERVAL_MS = 2000; // 2 seconds
+    private final Handler mHandler = new Handler();
+
+
+    /************************** Permission Request ***************************/
+
+    //Request permission for WIFI & location(GPS)
 
     private void askWIFInGPSPermissions() {
         if (android.os.Build.VERSION.SDK_INT >= 23) {
@@ -257,12 +318,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
         }
     }
 
-    private final ArrayList<Integer> mWifiRSSI = new ArrayList<>();
-    private final ArrayList<String> mWifiMacAddress = new ArrayList<>();
+    /************************** Wifi Scan ***************************/
+    //Wifi scans every 2 seconds
 
-    //Scan wifi every 2s
-    private static final int WIFI_SCAN_INTERVAL_MS = 2000; // 2 seconds
-    private final Handler mHandler = new Handler();
     private final Runnable mWifiScanRunnable = new Runnable() {
         @Override
         public void run() {
@@ -281,8 +339,6 @@ public class task1sensors extends Fragment implements SensorEventListener,
         mWifiMacAddress.clear();
     }
 
-    TextView tvWifi1;
-    TextView tvWifi2;
 
     private void scanForWifi() {
         wifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
@@ -322,33 +378,10 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             Log.e("WiFi", String.valueOf(wifis[i]));
         }
-        tvWifi2.setText(""+mac);
 
     }
 
-    public interface SensorsListener {
-        void LocationData(double tlat, double tlong, double altitude, double accuracy, double speed, String provider);
-        void AccelerometerData(float[] accelerometer, long accTimestamp);
-        void LinearAccelerationData(float[] linearacceleration, long accTimestamp);
-        void GravityData(float[] gravity, long accTimestamp);
-        void GyroscopeData(float[] gyroValues, long gyrTimestamp);
-        void MagnetometerData(float[] magneticFieldValues, long magTimestamp);
-        void PressureData(float barValue, long barTimestamp);
-        void ProximityData(float prxValue, long prxTimestamp);
-        void AmbientLightData(float lightValue, long lightTimestamp);
-        void RotationVectorData(float[] rotationvectorValues, long vecTimestamp);
-
-        void wifiData(long macaddress, int rssi, int i, int scanlistsize);
-        void AccessPointData(long mac, String ssid, long frequency);
-
-        // Sensor info
-        void AccelerometerInfo(String name, String vendor, double resolution, double power, float version, float type);
-        void GyroscopeInfo(String name, String vendor, double resolution, double power, float version, float type);
-        void RotationVectorInfo(String name, String vendor, double resolution, double power, float version, float type);
-        void MagnetometerInfo(String name, String vendor, double resolution, double power, float version, float type);
-        void BarometerInfo(String name, String vendor, double resolution, double power, float version, float type);
-        void LightSensorInfo(String name, String vendor, double resolution, double power, float version, float type);
-    }
+    /************************** Fragment View Initialisation ***************************/
 
     @Override
     public void onAttach(Activity activity) {
@@ -375,22 +408,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         elevation = (TextView)view.findViewById(R.id.Elevation);
 
         textGPS = (TextView) view.findViewById(R.id.tvGPS);
-        tvWifi1 = (TextView)view.findViewById(R.id.tvWifiRRSI);
-        tvWifi2 = (TextView)view.findViewById(R.id.tvWifiBSSID);
-/*
-        ImageView btMenu = view.findViewById(R.id.btMenu);
-        btMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DrawerLayout drawerLayout = view.findViewById(R.id.my_drawer_layout);
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    drawerLayout.openDrawer(GravityCompat.START);
-                }
-            }
-        });
-*/
+
         // set the color of the x-axis
         Graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.BLACK);
         Graph.getGridLabelRenderer().setVerticalLabelsColor(Color.BLACK);
@@ -411,6 +429,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
         }
         return view;
     }
+
+    /************************** Sensor data processing ***************************/
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
@@ -485,7 +505,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             magnetometerValue = (float) Math.sqrt(magneticFieldValues[0]*magneticFieldValues[0]
                     +magneticFieldValues[1]*magneticFieldValues[1]
-                    +magneticFieldValues[2]*magneticFieldValues[2]); //-----------sensor data required.
+                    +magneticFieldValues[2]*magneticFieldValues[2]);
 
             // Start plotting and time framing if button is hit
 
@@ -505,7 +525,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
             gyroIntValue =(float) Math.sqrt(gyroValues[0]*gyroValues[0]
                     +gyroValues[1]*gyroValues[1]
-                    +gyroValues[2]*gyroValues[2]);//-----------sensor data required.
+                    +gyroValues[2]*gyroValues[2]);
 
             // Start plotting and time framing if button is hit
 
@@ -518,7 +538,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_PRESSURE){
-            barValue = sensorEvent.values[0]; //-----------sensor data required.
+            barValue = sensorEvent.values[0];
             barTimestamp = sensorEvent.timestamp;
 
             activitycommander.PressureData(barValue, barTimestamp);
@@ -534,23 +554,25 @@ public class task1sensors extends Fragment implements SensorEventListener,
             }
         }
         if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT) {
-            lightValue = sensorEvent.values[0]; //-----------sensor data required.
+            lightValue = sensorEvent.values[0];
             lightTimestamp = sensorEvent.timestamp;
 
             activitycommander.AmbientLightData(lightValue, lightTimestamp);
 
             double lightValue1 = (double)Math.round(lightValue * 10d) / 10d;
-            lightsensor.setText(lightValue1 + " lx");
 
+            //No plot function as light sensor gives the binary result, use a text view instead.
+            lightsensor.setText(lightValue1 + " lx");
         }
-            // Start plotting and time framing if button is hit
+
 
         if (sensorEvent.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-            prxValue = sensorEvent.values[0]; //-----------sensor data required.
+            prxValue = sensorEvent.values[0];
             prxTimestamp = sensorEvent.timestamp;
 
             activitycommander.ProximityData(prxValue, prxTimestamp);
 
+            //No plot function as proximity sensor gives the binary result, use a text view instead.
             if(prxValue > 0) {
                 proximity.setText("Far");
             }
@@ -566,16 +588,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
 
     }
 
-    // Constants for sampling
-    private final int SENSOR_RATE = 100; // Hz
-    private final int TARGET_RATE = 5; // Hz
-    private final int SAMPLE_PERIOD_MS = 1000 / TARGET_RATE; // Milliseconds
-
-    // Variables for sampling
-    private float[] mSensorBuffer = new float[SENSOR_RATE / TARGET_RATE];
-    private int mSensorBufferIndex = 0;
 
     private void plotSensor(boolean stop,float sensorValue, float xcoord, float ycoord, float zcoord, long timestamp,String sensorLegend){
+        //Visualise sensor data using a graph plot
 
         //Time frame
         double xValue = timestamp/1000000; //ms
@@ -630,31 +645,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
         //debug line
         tvTimeStamp.setText(currentTimestamp/1000 + " s");
 
-
-        /*if(stop){
-            legend.setText("GraphView");
-            currentTimestamp=0;
-            tvTimeStamp.setText(currentTimestamp/1000 + " s");
-            accSeries.resetData(new DataPoint[0]);
-            accSeriesx.resetData(new DataPoint[0]);
-            accSeriesy.resetData(new DataPoint[0]);
-            accSeriesz.resetData(new DataPoint[0]);
-            Graph.removeAllSeries();
-
-            xValues.setText("0.0");
-            yValue.setText("0.0");
-            zValue.setText("0.0");
-            AbsValue.setText("0.0");
-
-
-            //Zero buffer
-            //for (int i = 0; i < mSensorBuffer.length; i++) {
-            //    mSensorBuffer[i] = 0;
-            //}
-            //mSensorBufferIndex = 0;
-            mLastXvalue = 0;
-
-        } */
+        //User friendly feature: reset dataset every 30 seconds,
+        // avoiding screen lag caused by a big data set
 
         if(currentTimestamp>30000) {
             currentTimestamp=0;
@@ -683,7 +675,9 @@ public class task1sensors extends Fragment implements SensorEventListener,
     @Override
     public void onResume(){
         super. onResume();
-        //sensorManager.registerListener(this, accelerometer, 60000); // 10000-100 samples/sec; 60000 - 20 samples/sec
+        //Register the sensor when user returns to the activity
+        //Sampling period of each sensor is set as required.
+
         sensorManager.registerListener(this, accelerometer, 10000);
         sensorManager.registerListener(this, gyroscope, 10000);
         sensorManager.registerListener(this, magnetometer, 10000);
@@ -693,10 +687,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         sensorManager.registerListener(this,gravitySensor,10000);
         sensorManager.registerListener(this, linearAccelerationSensor, 10000);
         sensorManager.registerListener(this, rotationvector, 10000);
-        //Register the sensor when user returns to the activity
-      //  getContext().registerReceiver(wifiScanReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        // locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        //wifiManager.startScan();
+
     }
 
     @Override
@@ -705,25 +696,24 @@ public class task1sensors extends Fragment implements SensorEventListener,
         super.onPause();
         sensorManager.unregisterListener(this);
         stopWifiScanning();
-       // getContext().unregisterReceiver(wifiScanReciever);
-        // locationManager.removeUpdates(this);
-        // wifiManager.stopScan();
     }
+
+    /************************** OnCreate function ***************************/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        askWIFInGPSPermissions();
-        initialisedManager();
-        initSensorCardView();
+        askWIFInGPSPermissions(); // Ask permission to access internet and location
+        initialisedManager();     // Initialise all managers for location, wifi and sensors
+        initSensorCardView();     // Update sensor information to the card view on UI
 
     }
 
 
     public void initialisedManager(){
 
-        //Location manager
+        //-----------------------Location manager--------------------------//
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
         locationListener = new LocationListener(){
             public void onLocationChanged (@NonNull Location location){
@@ -764,27 +754,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,locationListener);
 
-        //Wifi manager
-
+        //Wifi manager is initialised inside of Wifi scanning function
         startWifiScanning();
-        /*
-                wifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
-        if(wifiManager.getWifiState()==wifiManager.WIFI_STATE_DISABLED) {
-            wifiManager.setWifiEnabled(true);
-        }
-
-        getContext().registerReceiver(wifiScanReciever, new IntentFilter(wifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        wifiManager.startScan();
-        //Toast.makeText(getContext(), "Scanning WIFI ...", Toast.LENGTH_SHORT).show();
-
-                if(wifiManager.getWifiState()==wifiManager.WIFI_STATE_ENABLED) {
-            wifiManager.getConnectionInfo().getSSID();
-            wifiManager.getConnectionInfo().getBSSID();
-            wifiManager.getConnectionInfo().getFrequency();
-            wifiManager.getConnectionInfo().getRssi();
-        }
-
-         */
 
         //-----------------------Sensor manager--------------------------//
         sensorManager = (SensorManager)getActivity().getSystemService(Context.SENSOR_SERVICE);
@@ -799,6 +770,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
         linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         rotationvector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
+        //Get sensor information for each sensor, including power, maximum range, resolution and minimum delay
 
         if (accelerometer != null){
             accPower = accelerometer.getPower();
@@ -860,6 +832,12 @@ public class task1sensors extends Fragment implements SensorEventListener,
         }
 
     }
+
+    //Display information of each sensor on a card view that can be horizontally swiped.
+    //Check the layout design for card view: layout_sensorlist.xml
+    //This cardview uses the recyclerview to presents sensor data in a repeative pattern
+    //Check the recyclerview adaptor file: sensorRecyclerViewAdaptor.java
+
     @SuppressLint("DefaultLocale")
     private void initSensorCardView(){
         Log.d(TAG,"Sensor information gathering.");
@@ -918,14 +896,18 @@ public class task1sensors extends Fragment implements SensorEventListener,
         mSensorPower.add(String.format("Power: %.2f mA", prxPower));
         mSensorRange.add(String.format("Max Range: %.2f cm", prxRange));
 
-
-
-        initRecyclerView();
-    }
-    private void initRecyclerView(){
-        Log.d(TAG, "initRecyclerView: init recyclerview.");
     }
 
+    /************************** Button Click Function ***************************/
+    //These are onclick functions for "Start plot" and "Stop plot".
+
+    //When user hits buttons, corresponding Onclick function will be called to
+    //start or stop plotting the real time sensor data.
+
+    //Note that these buttons are set on the sensor inform card view, initialised inside of recyclerview
+    //adaptor: sensorRecyclerViewAdaptor.java. A unique position will be returned when
+    //buttons on different card views are clicked, so the plot function for the expected sensor
+    //can be called accordingly.
 
     @Override
     public void onButton1Click(int position) {
@@ -956,9 +938,8 @@ public class task1sensors extends Fragment implements SensorEventListener,
         //plotCode = 99;
         stopPlot = true;
         Log.d(TAG, "onButton2Click: Stop Plot clicked!");
+
         legend.setText("GraphView");
-        //currentTimestamp=0;
-        //tvTimeStamp.setText(currentTimestamp/1000 + " s");
         accSeries.resetData(new DataPoint[0]);
         accSeriesx.resetData(new DataPoint[0]);
         accSeriesy.resetData(new DataPoint[0]);
@@ -971,12 +952,6 @@ public class task1sensors extends Fragment implements SensorEventListener,
         AbsValue.setText("0.0");
 
         tvTimeStamp.setText("0.0 s");
-
-        //Zero buffer
-        //for (int i = 0; i < mSensorBuffer.length; i++) {
-        //    mSensorBuffer[i] = 0;
-        //}
-        //mSensorBufferIndex = 0;
         mLastXvalue = 0;
     }
 

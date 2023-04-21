@@ -41,42 +41,6 @@
             app:layout_constraintVertical_bias="0.566"
             tools:ignore="MissingClass" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvHeading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="heading: " />
-
-            <TextView
-                android:id="@+id/tvCompassHeading"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="compassHeading: " />
-
-            <TextView
-                android:id="@+id/tvGyroHeading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="gyroHeading: " />
-
-            <TextView
-                android:id="@+id/tvTouchX"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="touchX: " />
-
-            <TextView
-                android:id="@+id/tvTouchY"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="touchY: " />
-        </LinearLayout>
-
     </FrameLayout>
 
     <TextView

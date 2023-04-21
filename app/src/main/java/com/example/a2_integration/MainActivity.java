@@ -57,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
 
     private void handlingNavBar() {
 
-      //  getSupportActionBar().setTitle("Sensor View App");
         // The drawer layout toggles menu icon to open drawer and back button to close drawer
         drawerLayout = findViewById(R.id.my_drawer_layout);
         drawerLayout.openDrawer(Gravity.LEFT);
@@ -68,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         actionBarDrawerToggle.syncState();
 
         // makes the Navigation drawer icon always appear on the action bar
-    //    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         NavigationView navigation = findViewById(R.id.navigation);
 
         // Listens for clicks of nav bar buttons
@@ -93,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
             }
             // Show the fragment that was just selected
             fragmentManager.beginTransaction().show(currentfragment).commit();
-          //  getSupportActionBar().setTitle(title); // sets title bar to fragment name
             drawerLayout.closeDrawer(GravityCompat.START); // close Navigation drawer
 
             return true;

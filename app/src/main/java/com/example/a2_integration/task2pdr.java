@@ -38,14 +38,22 @@ import org.w3c.dom.Text;
 import java.util.Objects;
 
 /** This fragment performs a pedestrian dead reckoning (PDR) function.
- * The position of the user relative to their initial position is estimated and displayed on
- * a floorplan map of the building. The user can choose to record a trajectory in either the
- * Murray Library or Nucleus building. The user can set an initial position and floor number.
- * The floorplan is then automatically updated when the user changes floors.
+ * Fundamental features include:
+ * - PDR computation
+ * - Sensor fusion for PDR correction (Gyro + Compass)
+ * - Trajectory visualisation
+ *
+ * Extra features include:
+ * - Initialise user's position by touch point input
+ * - Floor-plan display for every floor of two required buildings: Nucleus and Murray Library.
+ * - Floor-plan will be automatically updated if the altitude change of user is detected.
+ * - Drop down menu added on UI, allowing User to choose initial building and floor.
  **/
+
 public class task2pdr extends Fragment implements SensorEventListener {
 
-    /************************Declarations*********************/
+    /************************ Class definition *********************/
+
     // A Canvas for viewing the trajectory
     myCanvas trajectoryView;
 
@@ -76,6 +84,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
     task2pdr.SensorsListener activitycommander;
 
     /************************Variables*********************/
+
     private int displayHeight;  // The height of the display in pixels
     private int displayWidth;   // The width of the display in pixels
     private boolean doPDR = false;  // Set true when PDR is active
@@ -152,12 +161,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         pdrToggleButton = (ToggleButton)view.findViewById(R.id.pdrToggle);
         pdrResetButton = (Button)view.findViewById(R.id.pdrReset);
         ivCompass= (ImageView) view.findViewById(R.id.imagCompass);
-        tvHeading = (TextView) view.findViewById(R.id.tvHeading);
-        tvCompassHeading = (TextView) view.findViewById(R.id.tvCompassHeading);
-        tvGyroHeading = (TextView) view.findViewById(R.id.tvGyroHeading);
         tvTimer = (TextView) view.findViewById(R.id.tvTimer);
-        tvTouchX = (TextView) view.findViewById(R.id.tvTouchX);
-        tvTouchY = (TextView) view.findViewById(R.id.tvTouchY);
 
         // Button Initialisation
         pdrToggleOnclick();
@@ -267,6 +271,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private void spinnersInitialisation(){
 
         // Create adapters for the spinners. There is no lower ground floor in the library.
+        // Check out the layout file for customised spinner: layout_spinner_text
+
         ArrayAdapter<CharSequence> adapterBuilding = ArrayAdapter.createFromResource(getContext(),
                 R.array.Buildings,R.layout.layout_spinner_text);
         ArrayAdapter<CharSequence> adapterFloorNucleus = ArrayAdapter.createFromResource(

@@ -69,7 +69,6 @@ public class myCanvas extends View {
         // Move the canvas origin to the bottom left corner
         // The positive y-axis still points down
         canvas.translate(0, getHeight());
-        //canvas.scale(1,-1);
 
         // Draw the trajectory path
         if (mPoints.size() > 1) {
