@@ -123,6 +123,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         displayWidth = displayMetrics.widthPixels;
     }
 
+    private float initialPositionX = 0f;
+    private float initialPositionY = 0f;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -172,9 +174,9 @@ public class task2pdr extends Fragment implements SensorEventListener {
                         float debug=touchY;
                         if (touchY >= displayHeight-trajectoryView.getHeight()) {
                             // Draw a marker at the initial position
-                            float scaledTouchX = touchX-mapOrigin[0];
-                            float scaledTouchY = displayHeight-touchY-statusBarHeight;
-                            drawInitialPosition(scaledTouchX,scaledTouchY);
+                            initialPositionX = touchX-mapOrigin[0];
+                            initialPositionY = displayHeight-touchY-statusBarHeight;
+                            drawInitialPosition(initialPositionX,initialPositionY);
                         }
                     }
                 }
@@ -355,18 +357,18 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Capture the initialFloor from the floor spinner
         initialFloor = floor;
         // Convert touch position to real world position depending on the building
-        switch (building) {
-            case NUCLEUS:
-                positionX = (touchX-mapOrigin[0])*nucleusPixelsToMetres;
-                positionY = (displayHeight-touchY-statusBarHeight)*nucleusPixelsToMetres;
-                break;
-            case LIBRARY:
-                positionX = (touchX-mapOrigin[0])*libraryPixelsToMetres;
-                positionY = (displayHeight-touchY-statusBarHeight)*libraryPixelsToMetres;
-                break;
-            default:
+        //switch (building) {
+        //    case NUCLEUS:
+        //        positionX = (touchX-mapOrigin[0])*nucleusPixelsToMetres;
+        //       positionY = (displayHeight-touchY-statusBarHeight)*nucleusPixelsToMetres;
+        //        break;
+        //    case LIBRARY:
+        //        positionX = (touchX-mapOrigin[0])*libraryPixelsToMetres;
+        //        positionY = (displayHeight-touchY-statusBarHeight)*libraryPixelsToMetres;
+        //        break;
+        //    default:
                 // Do nothing
-        }
+        //}
         // Store the initial position in the trajectory
         plotTrajectory(positionX,positionY);
         // Indicate initial position has been set
@@ -390,6 +392,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         isGravityReady = false;
         // Reset the variables
         strideCount = 0;
+        positionX = 0f;
+        positionY = 0f;
         // Remove the previous trajectory path
         trajectoryView.clearPoints();
         // Lock the spinners
@@ -683,11 +687,11 @@ public class task2pdr extends Fragment implements SensorEventListener {
         switch (building) {
             case NUCLEUS:
                 // Convert from metres to pixels
-                trajectoryView.addPoint(x/nucleusPixelsToMetres,y/nucleusPixelsToMetres);
+                trajectoryView.addPoint((x/nucleusPixelsToMetres)+initialPositionX,(y/nucleusPixelsToMetres)+initialPositionY);
                 break;
             case LIBRARY:
                 // Convert from metres to pixels
-                trajectoryView.addPoint(x/libraryPixelsToMetres,y/libraryPixelsToMetres);
+                trajectoryView.addPoint((x/libraryPixelsToMetres)+initialPositionX,(y/libraryPixelsToMetres)+initialPositionY);
                 break;
         }
     }
