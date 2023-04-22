@@ -176,14 +176,15 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
 
         // If PDR stop is pressed or 10 minutes elapse, package up data packet, write to a local binary file, store
         // in downloads and send to the API
-        if(!(Globalpdrrunning) || ((timesincestart) > 60000*count)) {
+        if(!(Globalpdrrunning) || ((timesincestart) > 240000*count)) {
+            if((timesincestart) > (240000*count)) {
+                oldStrideCount = GlobalStrideCount;
+            }
+
             count++;
             if(!(Globalpdrrunning)) {
                 count = 1;
                 oldStrideCount = 0;
-            }
-            if((timesincestart) > (60000*count)) {
-                oldStrideCount = GlobalStrideCount;
             }
             // Set sensor information and other static elements of trajectory data packet.
             trajectory
@@ -524,7 +525,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             byte[] data = Files.readAllBytes(path);
             Traj.Trajectory displaytraj = Traj.Trajectory.parseFrom(data);
             String display = displaytraj.toString();
-            binaryFileToString.setText(display.substring(0,10000) + "..."); // get string data
+            binaryFileToString.setText(display.substring(0,100000) + "..."); // get string data
         } catch (IOException e) {
             e.printStackTrace();
         }
