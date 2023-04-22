@@ -103,6 +103,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     int trajectoryNum = 0; // trajectory number
     long previousTimestamp = 0; // timestamp
     int count = 1; // counter
+    int oldStrideCount = 0;
 
     // File directories/ lists
     File storagedir2 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -175,10 +176,14 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
 
         // If PDR stop is pressed or 10 minutes elapse, package up data packet, write to a local binary file, store
         // in downloads and send to the API
-        if(!(Globalpdrrunning) || ((timesincestart) > 600000*count)) {
+        if(!(Globalpdrrunning) || ((timesincestart) > 60000*count)) {
             count++;
             if(!(Globalpdrrunning)) {
                 count = 1;
+                oldStrideCount = 0;
+            }
+            if((timesincestart) > (60000*count)) {
+                oldStrideCount = GlobalStrideCount;
             }
             // Set sensor information and other static elements of trajectory data packet.
             trajectory
@@ -308,7 +313,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             if(vectorrotationready & gyroscopeready & accelerometerready) {
                 motionsample
                         .setRelativeTimestamp(System.currentTimeMillis()-Globalstarttime)
-                        .setStepCount(GlobalStrideCount)
+                        .setStepCount(GlobalStrideCount-oldStrideCount)
                         .build();
                 trajectory
                         .addImuData(motionsample);
@@ -327,7 +332,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             if(vectorrotationready & gyroscopeready & accelerometerready) {
                 motionsample
                         .setRelativeTimestamp(System.currentTimeMillis()-Globalstarttime)
-                        .setStepCount(GlobalStrideCount)
+                        .setStepCount(GlobalStrideCount-oldStrideCount)
                         .build();
                 trajectory
                         .addImuData(motionsample);
@@ -346,7 +351,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             if(vectorrotationready & gyroscopeready & accelerometerready) {
                 motionsample
                         .setRelativeTimestamp(System.currentTimeMillis()-Globalstarttime)
-                        .setStepCount(GlobalStrideCount)
+                        .setStepCount(GlobalStrideCount-oldStrideCount)
                         .build();
                 trajectory
                         .addImuData(motionsample);

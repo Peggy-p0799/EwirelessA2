@@ -370,7 +370,7 @@ public class task1sensors extends Fragment implements SensorEventListener,
             mWifiRSSI.add(wifiScanList.get(i).level);
             mWifiMacAddress.add(wifiScanList.get(i).BSSID);
 
-            String[] split2 = wifiinfo.getMacAddress().split(":");
+            String[] split2 = wifiScanList.get(i).BSSID.split(":");
             StringBuilder builder2 = new StringBuilder();
             builder2.append(split2[0]);builder2.append(split2[1]);builder2.append(split2[2]);builder2.append(split2[3]);builder2.append(split2[4]);builder2.append(split2[5]);
 
