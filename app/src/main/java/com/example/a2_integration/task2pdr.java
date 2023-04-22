@@ -250,6 +250,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     startTime = System.currentTimeMillis();
                     activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.
                             currentTimeMillis());
+                    activitycommander.PDRData(positionX,positionY,strideCount);
                     timerHandler.postDelayed(timerRunnable, 0);
                     doToast("pdr started");
                 }
@@ -259,6 +260,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     pdrrunning = false;
                     activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.
                             currentTimeMillis());
+                    activitycommander.PDRData(positionX,positionY,strideCount);
                     //Disable the timer
                     timerHandler.removeCallbacks(timerRunnable);
                     doToast("pdr stopped");
@@ -382,7 +384,9 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private void setInitialPosition() {
         // Capture the initialFloor from the floor spinner
         initialFloor = floor;
-        // Store the initial position in the trajectory and plot on the map
+        // Store (0,0) initial position in the trajectory
+        updatePosition();
+        // Plot on the map
         plotTrajectory(positionX,positionY);
         // Indicate initial position has been set and do not allow further updates
         resetInitialPosition = false;
@@ -403,6 +407,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
         isGravityReady = false;
         // Reset the variables
         strideCount = 0;
+        strideLength = 0f;
         positionX = 0f;
         positionY = 0f;
         // Remove the previous trajectory path from the canvas
@@ -418,6 +423,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
     // Called when the stopPDR toggle button is active
     public void stopPDR() {
+        // Reset the variables
+        strideCount = 0;
         // Unlock the spinners so user can change the floorplan
         spinnerBuilding.setEnabled(true);
         spinnerFloor.setEnabled(true);

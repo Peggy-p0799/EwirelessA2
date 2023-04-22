@@ -83,6 +83,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     long GlobalStopTime = 0;
     long Globalcurrenttime = 0;
 
+    int oldStepCount = 0;
+
     String GlobalBuilding;
 
     // UI Views
@@ -167,7 +169,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
         GlobalStopTime = stoptime;
         Globalcurrenttime = currenttime;
         long timesincestart = Globalcurrenttime - Globalstarttime; // indicates how long has passed since PDR test began
-        if(building == 0X0) { // Assign string to building of PDR test
+        if (building == 0X0) { // Assign string to building of PDR test
             GlobalBuilding = "Nucleus";
         } else {
             GlobalBuilding = "Library";
@@ -175,22 +177,14 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
 
         // If PDR stop is pressed or 10 minutes elapse, package up data packet, write to a local binary file, store
         // in downloads and send to the API
-<<<<<<< HEAD
-        if(!(Globalpdrrunning) || ((timesincestart) > 240000*count)) {
-            if((timesincestart) > (240000*count)) {
-                oldStrideCount = GlobalStrideCount;
+        if (!(Globalpdrrunning) || ((timesincestart) > 240000 * count)) {
+            if((timesincestart > 240000 * count)) {
+                oldStepCount = GlobalStrideCount;
+                count++;
             }
-
-            count++;
-            if(!(Globalpdrrunning)) {
+            if (!(Globalpdrrunning)) {
                 count = 1;
-                oldStrideCount = 0;
-=======
-        if(!(Globalpdrrunning) || ((timesincestart) > 600000*count)) {
-            count++;
-            if(!(Globalpdrrunning)) {
-                count = 1;
->>>>>>> parent of f0144df (22/04 optimisation v1)
+                oldStepCount = 0;
             }
             // Set sensor information and other static elements of trajectory data packet.
             trajectory
@@ -320,7 +314,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             if(vectorrotationready & gyroscopeready & accelerometerready) {
                 motionsample
                         .setRelativeTimestamp(System.currentTimeMillis()-Globalstarttime)
-                        .setStepCount(GlobalStrideCount)
+                        .setStepCount(GlobalStrideCount-oldStepCount)
                         .build();
                 trajectory
                         .addImuData(motionsample);
@@ -339,7 +333,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             if(vectorrotationready & gyroscopeready & accelerometerready) {
                 motionsample
                         .setRelativeTimestamp(System.currentTimeMillis()-Globalstarttime)
-                        .setStepCount(GlobalStrideCount)
+                        .setStepCount(GlobalStrideCount-oldStepCount)
                         .build();
                 trajectory
                         .addImuData(motionsample);
@@ -358,7 +352,7 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             if(vectorrotationready & gyroscopeready & accelerometerready) {
                 motionsample
                         .setRelativeTimestamp(System.currentTimeMillis()-Globalstarttime)
-                        .setStepCount(GlobalStrideCount)
+                        .setStepCount(GlobalStrideCount-oldStepCount)
                         .build();
                 trajectory
                         .addImuData(motionsample);
@@ -580,7 +574,7 @@ class MyAsyncTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         try {
             // Open HTTPs connection to API
-            URL url = new URL("https://openpositioning.org/api/live/trajectory/upload/7Dqa_-rdwWk_ym3xrMlrFg/?key=ewireless");
+            URL url = new URL("https://openpositioning.org/api/live/trajectory/upload/O9uDbYBceTD2-LVircntOg/?key=ewireless");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST"); // POST request
