@@ -770,10 +770,13 @@ public class task2pdr extends Fragment implements SensorEventListener {
     // Update the floor depending on the altitude
     private void updateFloor() {
         // Constants to improve readability
-        float GROUND = 0f;  // The relative altitude of the ground floor
-        float FIRST = 5.0f; // The relative altitude of the first floor
-        float SECOND = 10.0f;   // The relative altitude of the second floor
-        float THIRD = 15.0f;    // The relative altitude of the third floor
+        float GROUND = 0f;  // The relative altitude of the ground floor (same for both buildings)
+        float NUCLEUS_FIRST = 5.0f; // The relative altitude of the nucleus first floor
+        float NUCLEUS_SECOND = 10.0f;   // The relative altitude of the nucleus second floor
+        float NUCLEUS_THIRD = 15.0f;    // The relative altitude of the nucleus third floor
+        float LIBRARY_FIRST = 4.0f; // The relative altitude of the nucleus first floor
+        float LIBRARY_SECOND = 8.0f;   // The relative altitude of the nucleus second floor
+        float LIBRARY_THIRD = 12.f;    // The relative altitude of the nucleus third floor
         float FLOOR_ERROR = 1.0f;   // Allowed error in altitude
 
         // Change the current floor depending on the building and the altitude
@@ -783,19 +786,22 @@ public class task2pdr extends Fragment implements SensorEventListener {
                         (NUCLEUS_LOWER_GROUND + FLOOR_ERROR)) {
                     // Indicate user is on the lower ground floor
                     floor = -1;
-                    // Extra 0.5f accounts for ramped area in cafeteria of Nucleus
                 } else if (altitude > (GROUND - FLOOR_ERROR) && altitude <
                         (GROUND + FLOOR_ERROR + 0.5f)) {
-                    // Indicate user is on the ground floor
+                    // Extra 0.5f accounts for ramped area in cafeteria of Nucleus
+                    // Indicate user is on the nucleus ground floor
                     floor = 0;
-                } else if (altitude > (FIRST - FLOOR_ERROR) && altitude < (FIRST + FLOOR_ERROR)) {
-                    // Indicate user is on the first floor
+                } else if (altitude > (NUCLEUS_FIRST - FLOOR_ERROR) && altitude <
+                        (NUCLEUS_FIRST + FLOOR_ERROR)) {
+                    // Indicate user is on the nucleus first floor
                     floor = 1;
-                } else if (altitude > (SECOND - FLOOR_ERROR) && altitude < (SECOND + FLOOR_ERROR)) {
-                    // Indicate user is on the second floor
+                } else if (altitude > (NUCLEUS_SECOND - FLOOR_ERROR) && altitude <
+                        (NUCLEUS_SECOND + FLOOR_ERROR)) {
+                    // Indicate user is on the nucleus second floor
                     floor = 2;
-                } else if (altitude > (THIRD - FLOOR_ERROR) && altitude < (THIRD + FLOOR_ERROR)) {
-                    // Indicate user is on the third floor
+                } else if (altitude > (NUCLEUS_THIRD - FLOOR_ERROR) && altitude <
+                        (NUCLEUS_THIRD + FLOOR_ERROR)) {
+                    // Indicate user is on the nucleus third floor
                     floor = 3;
                 }
                 // Always update the floor spinner
@@ -803,16 +809,20 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 break;
             case LIBRARY:
                 if (altitude > (GROUND - FLOOR_ERROR) && altitude < (GROUND + FLOOR_ERROR)) {
-                    // Indicate user is on the ground floor
+                    // Indicate user is on the library ground floor
                     floor = 0;
-                } else if (altitude > (FIRST - FLOOR_ERROR) && altitude < (FIRST + FLOOR_ERROR)) {
-                    // Indicate user is on the first floor
+                } else if (altitude > (LIBRARY_FIRST - FLOOR_ERROR) && altitude <
+                        (LIBRARY_FIRST + FLOOR_ERROR)) {
+                    // Indicate user is on the library first floor
                     floor = 1;
-                } else if (altitude > (SECOND - FLOOR_ERROR) && altitude < (SECOND + FLOOR_ERROR)) {
-                    // Indicate user is on the second floor
+                } else if (altitude > (LIBRARY_SECOND - FLOOR_ERROR) && altitude <
+                        (LIBRARY_SECOND + FLOOR_ERROR)) {
+
+                    // Indicate user is on the library second floor
                     floor = 2;
-                } else if (altitude > (THIRD - FLOOR_ERROR) && altitude < (THIRD + FLOOR_ERROR)) {
-                    // Indicate user is on the third floor
+                } else if (altitude > (LIBRARY_THIRD - FLOOR_ERROR) && altitude <
+                        (LIBRARY_THIRD + FLOOR_ERROR)) {
+                    // Indicate user is on the library third floor
                     floor = 3;
                 }
                 // Always update the floor spinner
