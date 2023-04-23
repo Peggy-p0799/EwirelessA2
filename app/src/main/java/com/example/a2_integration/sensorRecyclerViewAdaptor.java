@@ -10,18 +10,20 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.ArrayList;
 
-public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecyclerViewAdaptor.ViewHolder>{
+/** This is an adaptor for the sensor information display recyclerview as part of task1sensors UI.
+ *  Author: Peggy Pei
+ *
+ *  Features:
+ *  - View information of all sensors
+ *  - Plot data from sensors in real time
+ */
 
-    //This is adaptor for the sensor inform display recyclerview as part of task 1 UI
-    //User will be able to view information of all sensors and
-    //plot real time data from specified sensors:
-
+public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecyclerViewAdaptor.
+        ViewHolder>{
     /***************** Initialisation *************************/
 
     private static final String TAG = "RecyclerViewAdapter";
@@ -34,11 +36,12 @@ public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecycl
     private ArrayList<String> mSensorRange = new ArrayList<>();
     private Context mContext;
 
-    //Define the interface for button click listener
+    /***************** Button click listeners *************************/
 
     public interface OnButton1ClickListener {
         void onButton1Click( int position);
     }
+
     public interface OnButton2ClickListener {
         void onButton2Click( int position);
     }
@@ -48,16 +51,32 @@ public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecycl
 
     /***************** Adaptor structure *************************/
 
-    public sensorRecyclerViewAdaptor(Context context, ArrayList<Integer> images, ArrayList<String> sensorNames,
-                                     ArrayList<String> sensorResolution, ArrayList<String> sensorMinDelay,
-                                     ArrayList<String> sensorPower, ArrayList<String> sensorRange,
-                                     OnButton1ClickListener btnStart, OnButton2ClickListener btnStop) {
-        if(images != null) mImages = images;
-        if(sensorNames != null) mSensorNames = sensorNames;
-        if(sensorResolution != null) mSensorResolution = sensorResolution;
-        if(sensorResolution != null) mSensorMinDelay = sensorMinDelay;
-        if(sensorPower != null) mSensorPower = sensorPower;
-        if(sensorRange != null) mSensorRange = sensorRange;
+    public sensorRecyclerViewAdaptor(Context context, ArrayList<Integer> images,
+                                     ArrayList<String> sensorNames,
+                                     ArrayList<String> sensorResolution,
+                                     ArrayList<String> sensorMinDelay,
+                                     ArrayList<String> sensorPower,
+                                     ArrayList<String> sensorRange,
+                                     OnButton1ClickListener btnStart,
+                                     OnButton2ClickListener btnStop) {
+        if (images != null) {
+            mImages = images;
+        }
+        if (sensorNames != null) {
+            mSensorNames = sensorNames;
+        }
+        if (sensorResolution != null) {
+            mSensorResolution = sensorResolution;
+        }
+        if (sensorResolution != null) {
+            mSensorMinDelay = sensorMinDelay;
+        }
+        if (sensorPower != null) {
+            mSensorPower = sensorPower;
+        }
+        if (sensorRange != null) {
+            mSensorRange = sensorRange;
+        }
         mContext = context;
         if(btnStart !=null) button1Listener = btnStart;
         if(btnStop != null) button2Listener = btnStop;
@@ -68,13 +87,15 @@ public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecycl
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_sensorlist, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_sensorlist,
+                parent, false);
         ViewHolder holder = new ViewHolder(view,button1Listener,button2Listener);
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder,
+                                 @SuppressLint("RecyclerView") int position) {
         Log.d(TAG, "onBindViewHolder: called.");
         holder.sensorImage.setImageResource(mImages.get(position));
 
@@ -95,7 +116,6 @@ public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecycl
 
     }
 
-
     @Override
     public int getItemCount() {
         return mSensorNames.size();
@@ -113,7 +133,8 @@ public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecycl
         OnButton2ClickListener stopPlotListener;
 
 
-        public ViewHolder( View itemView, OnButton1ClickListener button1Listener, OnButton2ClickListener button2Listener) {
+        public ViewHolder( View itemView, OnButton1ClickListener button1Listener,
+                           OnButton2ClickListener button2Listener) {
             super(itemView);
             sensorImage = itemView.findViewById(R.id.imageSensor);
             sensorName = itemView.findViewById(R.id.tvSensorName);
@@ -140,6 +161,5 @@ public class sensorRecyclerViewAdaptor extends RecyclerView.Adapter<sensorRecycl
                 }
             });
         }
-
     }
 }

@@ -1,6 +1,11 @@
 package com.example.a2_integration;
 
-import java.io.FileOutputStream;
+/** This class is compiled from the protobuf file and is used to write data from the sensors and
+ *  trajectory from the PDR to the trajectory data structure. This data is then serialised to
+ *  bytes using commands within this class, written to a local .bin file in the phone's local
+ *  directory and then uploaded to the cloud API.
+ *  Author: Thomas Harley
+ */
 
 public final class Traj {
   private Traj() {}

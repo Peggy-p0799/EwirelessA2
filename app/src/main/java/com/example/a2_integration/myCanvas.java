@@ -7,14 +7,18 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.View;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /** This class is used to draw the PDR trajectory on a canvas so it can be visualised.
+ *  Author: Peggy Pei
+ *
+ *  Features:
+ *  - Plot initial position
+ *  - Plot trajectory
  */
 public class myCanvas extends View {
-
+    /***************** Declarations *************************/
     private Paint mPaint;
     private List<PointF> mPoints;
     private PointF mInitialPosition;
@@ -34,6 +38,8 @@ public class myCanvas extends View {
         init();
     }
 
+    /***************** Initialisation *************************/
+
     private void init() {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -45,16 +51,21 @@ public class myCanvas extends View {
         mInitialPosition = new PointF();
     }
 
+    /***************** Helper methods *************************/
+
+    // Clears all points in the current trajectory
     public void clearPoints() {
         mPoints.clear();
         invalidate();
     }
 
+    // Adds a point to the current trajectory
     public void addPoint(float x, float y) {
         mPoints.add(new PointF(x, -y));
         invalidate();
     }
 
+    // Loads the initial position into
     public void drawInitialPosition(float x, float y) {
         // Load the x and y positions into the initial position pointF
         mInitialPosition.x = x;
@@ -62,6 +73,9 @@ public class myCanvas extends View {
         invalidate();
     }
 
+    /***************** Draw on the canvas *************************/
+
+    // Draws the trajectory and initial position on the canvas
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

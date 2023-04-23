@@ -1,9 +1,7 @@
 package com.example.a2_integration;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -11,7 +9,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -19,40 +16,36 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import org.w3c.dom.Text;
-
 import java.util.Objects;
 
 /** This fragment performs a pedestrian dead reckoning (PDR) function.
- * Fundamental features include:
- * - PDR computation
- * - Sensor fusion for PDR correction (Gyro + Compass)
- * - Trajectory visualisation
+ *  Author: Harry McLachlan
  *
- * Extra features include:
- * - Initialise user's position by touch point input
- * - Floor-plan display for every floor of two required buildings: Nucleus and Murray Library.
- * - Floor-plan will be automatically updated if the altitude change of user is detected.
- * - Drop down menu added on UI, allowing User to choose initial building and floor.
- **/
+ *  Fundamental features include:
+ *  - PDR computation
+ *  - Sensor fusion for PDR correction (Gyro + Compass)
+ *  - Trajectory visualisation
+ *
+ *  Extra features include:
+ *  - Initialise user's position by touch point input
+ *  - Floor-plan display for every floor of two required buildings: Nucleus and Murray Library.
+ *  - Floor-plan will be automatically updated if the altitude change of user is detected.
+ *  - Drop down menu added on UI, allowing User to choose initial building and floor.
+ */
 
 public class task2pdr extends Fragment implements SensorEventListener {
-
-    /************************ Class definition *********************/
+    /************************ Declarations *********************/
 
     // A Canvas for viewing the trajectory
     myCanvas trajectoryView;
@@ -65,13 +58,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
     ImageView ivMap;
     ImageView ivCompass;
 
-    // TextViews to view the information
-    TextView tvHeading;
-    TextView tvGyroHeading;
-    TextView tvCompassHeading;
+    // TextView for the timer
     TextView tvTimer;
-    TextView tvTouchX;
-    TextView tvTouchY;
 
     // Buttons to start/stop and reset the trajectory
     ToggleButton pdrToggleButton;
@@ -80,10 +68,10 @@ public class task2pdr extends Fragment implements SensorEventListener {
     // Get access to sensors
     private SensorManager mSensorManager;
 
-    // Declare the activitycommander
+    // To send data to MainActivity
     task2pdr.SensorsListener activitycommander;
 
-    /************************Variables*********************/
+    /************************ Variables *********************/
 
     private int displayHeight;  // The height of the display in pixels
     private int displayWidth;   // The width of the display in pixels
@@ -92,7 +80,9 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private final int[] mapOrigin = new int[2];   // Coordinates of lower left corner of canvas
     private float touchX;   // x coordinate of the user's touch
     private float touchY;   // y coordinate of the user's touch
-    boolean pdrrunning = false; // Set to true when PDR is active
+    boolean pdrrunning = false; // Controls the data sharing between fragments
+
+    /************************ SensorsListener interface definition *********************/
 
     // Declare the SensorsListener interface to allow data sharing between fragments
     public interface SensorsListener {
@@ -107,24 +97,13 @@ public class task2pdr extends Fragment implements SensorEventListener {
         activitycommander = (task2pdr.SensorsListener) activity;
     }
 
-    // Height offset from status bar needs to be cut for precise touch event on map canvas
-    // Get status bar height here
-    int statusBarHeight;
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen",
-                "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
-    }
+    /************************ onCreate *********************/
 
     // Called when the fragment is created
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        statusBarHeight=getStatusBarHeight();
+        statusBarHeight = getStatusBarHeight();
 
         // Check and request permissions - ACTIVITY_RECOGNITION required for step detector
         if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.
@@ -144,8 +123,10 @@ public class task2pdr extends Fragment implements SensorEventListener {
         displayWidth = displayMetrics.widthPixels;
     }
 
-    private float initialPositionX = 0f;
-    private float initialPositionY = 0f;
+    /************************ onCreateView *********************/
+
+    private float initialPositionX = 0f;    // The x coordinate touch point relative to the canvas
+    private float initialPositionY = 0f;    // The y coordinate touch point relative to the canvas
     // Called when the fragment view is created
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle
@@ -199,23 +180,40 @@ public class task2pdr extends Fragment implements SensorEventListener {
         return view;
     }
 
+    /************************ onResume *********************/
 
-    long startTime = 0; // PDR start time
-    long stopTime = 0;  // PDR stop time
-    // Runs without a timer by reposting this handler at the end of the runnable
-    Handler timerHandler = new Handler();
-    Runnable timerRunnable = new Runnable() {
-        @Override
-        public void run() {
-            long millis = System.currentTimeMillis() - startTime;
-            int seconds = (int) (millis / 1000);
-            int minutes = seconds / 60;
-            seconds = seconds % 60;
-            // Update the timer
-            tvTimer.setText(String.format("%d:%02d", minutes, seconds));
-            timerHandler.postDelayed(this, 500);
+    // Register the sensors with SensorManager when user returns to the activity
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Register the step detector sensor
+        Sensor StepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        if (StepDetector != null) {
+            mSensorManager.registerListener(this, StepDetector,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+        } else {
+            // Warn if step detector not available on the device
+            doToast("Step Detector not present.");
         }
-    };
+    }
+
+    /************************ Status bar height calculation *********************/
+
+    // Height offset from status bar needs to be cut for precise touch event on map canvas
+    // Get status bar height here
+    int statusBarHeight;
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen",
+                "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    /************************ Reset button listeners *********************/
 
     // Listeners for the reset button
     private void pdrResetOnclick(){
@@ -237,6 +235,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         });
     }
 
+    /************************ Start/stop button listeners *********************/
+
     // Listener for the start/stop toggle button
     private void pdrToggleOnclick(){
         pdrToggleButton.setOnClickListener(new View.OnClickListener() {
@@ -248,7 +248,7 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     pdrrunning = true;
                     // Enable the timer
                     startTime = System.currentTimeMillis();
-                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.
+                    activitycommander.PDRStatus(pdrrunning,startTime,stopTime,building,System.
                             currentTimeMillis());
                     activitycommander.PDRData(positionX,positionY,strideCount);
                     timerHandler.postDelayed(timerRunnable, 0);
@@ -258,10 +258,10 @@ public class task2pdr extends Fragment implements SensorEventListener {
                     // Stop the PDR
                     stopPDR();
                     pdrrunning = false;
-                    activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.
+                    activitycommander.PDRStatus(pdrrunning,startTime,stopTime,building,System.
                             currentTimeMillis());
                     activitycommander.PDRData(positionX,positionY,strideCount);
-                    //Disable the timer
+                    // Disable the timer
                     timerHandler.removeCallbacks(timerRunnable);
                     doToast("pdr stopped");
                 }
@@ -269,9 +269,29 @@ public class task2pdr extends Fragment implements SensorEventListener {
         });
     }
 
+    /************************ Timer initialisation *********************/
+
+    long startTime = 0; // PDR start time
+    long stopTime = 0;  // PDR stop time
+    // Runs without a timer by reposting this handler at the end of the runnable
+    Handler timerHandler = new Handler();
+    Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            long millis = System.currentTimeMillis() - startTime;
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+            // Update the timer
+            tvTimer.setText(String.format("%d:%02d", minutes, seconds));
+            timerHandler.postDelayed(this, 500);
+        }
+    };
+
+    /************************ Spinner initialisation *********************/
+
     // Initialise the spinners
     private void spinnersInitialisation(){
-
         // Create adapters for the spinners. There is no lower ground floor in the library.
         // Check out the layout file for customised spinner: layout_spinner_text
 
@@ -340,24 +360,9 @@ public class task2pdr extends Fragment implements SensorEventListener {
         });
     }
 
-    // Register the sensors with SensorManager when user returns to the activity
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Register the step detector sensor
-        Sensor StepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-        if (StepDetector != null) {
-            mSensorManager.registerListener(this, StepDetector,
-                    SensorManager.SENSOR_DELAY_NORMAL);
-        } else {
-            // Warn if step detector not available on the device
-            doToast("Step Detector not present.");
-        }
-    }
+    /************************ SensorManager methods *********************/
 
     private final float[] stepDetectorValues = new float[2];
-
     // Called when the step detector values change
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
@@ -377,6 +382,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
     }
 
+    /************************ Initial position capture *********************/
+
     private int initialFloor;   // The floor the user begins the PDR on
     private float positionX = 0f;    // Position in the E direction
     private float positionY = 0f;    // Position in the N direction
@@ -391,6 +398,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Indicate initial position has been set and do not allow further updates
         resetInitialPosition = false;
     }
+
+    /************************ Start the PDR *********************/
 
     // Called when the startPDR toggle button is active
     public void startPDR() {
@@ -421,6 +430,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         doPDR = true;
     }
 
+    /************************ Stop the PDR *********************/
+
     // Called when the stopPDR toggle button is active
     public void stopPDR() {
         // Reset the variables
@@ -432,6 +443,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Indicate sensor updates should be ignored
         doPDR = false;
     }
+
+    /************************ Reset the PDR *********************/
 
     // Called when the resetPDR button is tapped
     private void resetPDR() {
@@ -445,25 +458,13 @@ public class task2pdr extends Fragment implements SensorEventListener {
         resetInitialPosition = true;
     }
 
-    private Toast mToast;   // A toast message
-    // Used to cancel the existing toast and display the new toast instead
-    private void doToast(String message) {
-        // Cancel the previous toast if it exists
-        if (mToast != null) {
-            mToast.cancel();
-        }
-        // Initiate a new toast
-        mToast = Toast.makeText(getContext(), message, Toast.LENGTH_LONG);
-        mToast.show();
-    }
-
-    /** The set sensor functions are triggered whenever a new value is sent from task1pdr. **/
+    /************************ Sensor processing *********************/
+    // The set sensor functions are triggered whenever a new value is sent from task1pdr.
 
     private boolean resetAccMaxMin = true;  // Set true to reset the max/min accelerations
     private float accVerticalMax;   // The maximum acceleration in the device z-axis
     private float accVerticalMin;   // The minimum acceleration in the device z-axis
     private final float[] accVerticalValues = new float[3];
-
     // Called when the accelerometer sensor values are updated
     public void setLinearAcceleration(float[] linearAcceleration, long accTimestamp) {
         // Ignore the sensor updates unless the PDR is active
@@ -576,7 +577,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
         isBarometerReady = true;
 
-        activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.currentTimeMillis()); // checking whether 10 minutes has elapsed - every 1s
+        activitycommander.PDRStatus(pdrrunning, startTime,stopTime,building,System.
+                currentTimeMillis()); // checking whether 10 minutes has elapsed - every 1s
     }
 
     // Ambient light sensor is not used by the PDR
@@ -604,13 +606,15 @@ public class task2pdr extends Fragment implements SensorEventListener {
         updatePosition();   // Calculate the new position of the user
     }
 
+    /************************ Compass orientation *********************/
+
     private final float[] rotationMatrix = new float[9];    // Stores the rotation matrix
     private final float[] orientationAngles = new float[3]; // Stores the azimuth, pitch and roll
     private boolean isCompassReady = false; // True when compass has been initialised
     private float compassHeading;   // Stores the heading from the compass between -pi and pi
     // Calculate the orientation of the device using the gravity sensor and magnetometer
     private void calculateOrientation() {
-        // Do not calculate the orientation until the gravity and magnetometer values are initialised
+        // Do not calculate orientation until the gravity and magnetometer values are initialised
         if (!isGravityReady || !isMagnetometerReady) {
             return;
         }
@@ -624,6 +628,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
 
         isCompassReady = true;  // Flag when the compass angle is initialised
     }
+
+    /************************ Compass and gyroscope sensor fusion *********************/
 
     private boolean resetHeading = true;    // True when heading needs initialised
     private float heading;  // The sensor fusion heading of the device between 0 and 2pi clockwise
@@ -656,6 +662,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         compassRotation();  // Perform the compass animation
     }
 
+    /************************ Compass needle animation *********************/
+
     // Called when a new heading is available
     private void compassRotation(){
         // Set up the rotation
@@ -671,6 +679,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         ivCompass.startAnimation(rotate);
     }
 
+    /************************ Stride length Estimation *********************/
+
     private float strideLength;
     // Estimate the step length, based on [Weinberg, 2002]
     private void weinbergSL() {
@@ -679,6 +689,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Apply the Weinberg formula
         strideLength = (float) (Math.pow((accVerticalMax-accVerticalMin),(1.0/4))*K*K);
     }
+
+    /************************ PDR positional updates *********************/
 
     // Update the position based on SL+theta estimate
     private void updatePosition() {
@@ -693,6 +705,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
         // Send the position information to MainActivity
         activitycommander.PDRData(positionX, positionY, strideCount);
     }
+
+    /************************ Visualise the trajectory *********************/
 
     // Plot the step on the canvas
     private void plotTrajectory(float x, float y) {
@@ -715,6 +729,8 @@ public class task2pdr extends Fragment implements SensorEventListener {
                 // Do nothing
         }
     }
+
+    /************************ Floorplan updates based on barometer *********************/
 
     private float referenceAltitude;    // The altitude of the ground floor relative to sea level
     private float altitude; // The current altitude of the user relative to sea level
@@ -750,24 +766,26 @@ public class task2pdr extends Fragment implements SensorEventListener {
     private final byte LIBRARY = 0x1;   // Code representing the library building
     private byte floor; // The current floor of the user
     private byte building = NUCLEUS;    // The building code
-    private final float FLOOR_ERROR = 1f;   // Allowed error in altitude
     private final float NUCLEUS_LOWER_GROUND = -3.0f;   // Relative altitude of nucleus LG floor
     // Update the floor depending on the altitude
     private void updateFloor() {
         // Constants to improve readability
-        float GROUND = 0f;
-        float FIRST = 5.0f;
-        float SECOND = 10.0f;
-        float THIRD = 15.0f;
+        float GROUND = 0f;  // The relative altitude of the ground floor
+        float FIRST = 5.0f; // The relative altitude of the first floor
+        float SECOND = 10.0f;   // The relative altitude of the second floor
+        float THIRD = 15.0f;    // The relative altitude of the third floor
+        float FLOOR_ERROR = 1.0f;   // Allowed error in altitude
 
         // Change the current floor depending on the building and the altitude
         switch (building) {
             case NUCLEUS:
-                if (altitude > (NUCLEUS_LOWER_GROUND - FLOOR_ERROR) && altitude < (NUCLEUS_LOWER_GROUND + FLOOR_ERROR)) {
+                if (altitude > (NUCLEUS_LOWER_GROUND - FLOOR_ERROR) && altitude <
+                        (NUCLEUS_LOWER_GROUND + FLOOR_ERROR)) {
                     // Indicate user is on the lower ground floor
                     floor = -1;
                     // Extra 0.5f accounts for ramped area in cafeteria of Nucleus
-                } else if (altitude > (GROUND - FLOOR_ERROR) && altitude < (GROUND + FLOOR_ERROR + 0.5f)) {
+                } else if (altitude > (GROUND - FLOOR_ERROR) && altitude <
+                        (GROUND + FLOOR_ERROR + 0.5f)) {
                     // Indicate user is on the ground floor
                     floor = 0;
                 } else if (altitude > (FIRST - FLOOR_ERROR) && altitude < (FIRST + FLOOR_ERROR)) {
@@ -870,5 +888,19 @@ public class task2pdr extends Fragment implements SensorEventListener {
             default:
                 // Keep image the same
         }
+    }
+
+    /************************ Toast helper *********************/
+
+    private Toast mToast;   // A toast message
+    // Used to cancel the existing toast and display the new toast instead
+    private void doToast(String message) {
+        // Cancel the previous toast if it exists
+        if (mToast != null) {
+            mToast.cancel();
+        }
+        // Initiate a new toast
+        mToast = Toast.makeText(getContext(), message, Toast.LENGTH_LONG);
+        mToast.show();
     }
 }

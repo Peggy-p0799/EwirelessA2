@@ -4,7 +4,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -33,20 +32,23 @@ import java.util.Date;
 import java.util.List;
 
 /** This fragment receives, formats and stores all data into trajectory class as required
- * and sends them to the cloud.
+ *  and sends them to the cloud.
+ *  Author: Thomas Harley
  *
- * Fundamental Features include:
+ *  Fundamental Features include:
  *  - Collect all data inform as required
  *  - Automatically upload trajectory to the cloud every 10 minutes (?? may be not that accurate
  *
- * Extra Features include:
- * - segment the trajectories into 10 min sections and prepare them for sending.
- * - Store and access previous trajectories for viewing.
- * - UI allows the user check local trajectory, preview trajectory inform and manually upload trajectory to the cloud.
+ *  Extra Features include:
+ *  - segment the trajectories into 10 min sections and prepare them for sending.
+ *  - Store and access previous trajectories for viewing.
+ *  - UI allows the user check local trajectory, preview trajectory inform and manually upload
+ *    trajectory to the cloud.
  */
 
 public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickListener,
         swipeAdaptor.OnBtnLoadClickListener, swipeAdaptor.OnBtnUploadClickListener{
+    /***************** Declaration *************************/
 
     // Declaration of Data Packet Variables
     Traj.Trajectory.Builder trajectory = Traj.Trajectory.newBuilder(); // Total Data Packet
@@ -107,16 +109,22 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     int count = 1; // counter
 
     // File directories/ lists
-    File storagedir2 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    File storagedir2 = Environment.getExternalStoragePublicDirectory(Environment.
+            DIRECTORY_DOWNLOADS);
     List<File> fileList = new ArrayList<>();
+
+    /***************** onCreate *************************/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
+    /***************** onCreateView *************************/
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_task3api, container, false);
 
@@ -131,9 +139,11 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
 
         if(trajectoryList!= null){
             trajectoryList.setLayoutManager(new LinearLayoutManager(getContext()));
-            trajectoryList.addItemDecoration(new DividerItemDecoration(getContext(),LinearLayoutManager.VERTICAL));
+            trajectoryList.addItemDecoration(new DividerItemDecoration(getContext(),
+                    LinearLayoutManager.VERTICAL));
             trajectorySwipeAdaptor = new swipeAdaptor
-                    (getContext(),myTrajectoryNum,myTrajectoryLocation,myTrajectoryTimestamp,this,this,this);
+                    (getContext(),myTrajectoryNum,myTrajectoryLocation,myTrajectoryTimestamp,
+                            this,this,this);
             trajectoryList.setAdapter(trajectorySwipeAdaptor);
         }
 
@@ -146,8 +156,59 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
         return view; // return view
     }
 
+    /***************** Button listeners *************************/
+
+    // Function when upload button is pressed for data file in list view
+    @Override
+    public void onUploadClick(int position) {
+        Log.d(TAG, "onUploadClick: upload button is clicked");
+        // Refresh the data file list view
+        refreshListView();
+        currentBinaryPath = fileList.get(position).getAbsolutePath();
+        MyAsyncTask task = new MyAsyncTask(currentBinaryPath, getContext());
+        task.execute();
+    }
+
+    //Delete and load function to process trajectory data set
+    @Override
+    public void onDeleteClick(int position) {
+        Log.d(TAG, "onDeleteClick: delete button is clicked");
+        // Refresh the data file list view
+        refreshListView();
+        if(position>=0 && position<myTrajectoryNum.size()){
+            myTrajectoryNum.remove(position);
+            trajectorySwipeAdaptor.notifyItemRemoved(position);
+            trajectorySwipeAdaptor.notifyItemRangeChanged(position, myTrajectoryNum.size());
+        }
+        // Delete appropriate file that was clicked
+        fileList.get(position).delete();
+        // Refresh again
+        refreshListView();
+    }
+
+    @Override
+    public void onLoadClick(int position) {
+        Log.d(TAG, "load button is clicked");
+        try {
+            // Refresh data file list
+            refreshListView();
+            String filename = fileList.get(position).getName();
+            Path path = Paths.get(Environment.getExternalStoragePublicDirectory(Environment.
+                    DIRECTORY_DOWNLOADS) + "/" + filename);
+            byte[] data = Files.readAllBytes(path);
+            Traj.Trajectory displaytraj = Traj.Trajectory.parseFrom(data);
+            String display = displaytraj.toString();
+            binaryFileToString.setText(display.substring(0,100000) + "..."); // get string data
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /***************** List item creation *************************/
+
     // Create data file list item
-    private void createList(int i, String Building, long timestamp, long initialTimestamp, String name) {
+    private void createList(int i, String Building, long timestamp, long initialTimestamp,
+                            String name) {
         //Format timestamp before display on UI;
         long millis = timestamp-initialTimestamp;
         int seconds = (int) (millis / 1000);
@@ -161,22 +222,26 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
         trajectorySwipeAdaptor.notifyDataSetChanged();
     }
 
+    /***************** PDR status and data *************************/
+
     // Sets/ checks status of PDR and packages up data packet if it is time to send
-    public void setPDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building, long currenttime) {
+    public void setPDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building,
+                             long currenttime) {
         // Global flags assigned
         Globalpdrrunning = pdrrunning;
         Globalstarttime = starttime;
         GlobalStopTime = stoptime;
         Globalcurrenttime = currenttime;
-        long timesincestart = Globalcurrenttime - Globalstarttime; // indicates how long has passed since PDR test began
+        // indicates how long has passed since PDR test began
+        long timesincestart = Globalcurrenttime - Globalstarttime;
         if (building == 0X0) { // Assign string to building of PDR test
             GlobalBuilding = "Nucleus";
         } else {
             GlobalBuilding = "Library";
         }
 
-        // If PDR stop is pressed or 10 minutes elapse, package up data packet, write to a local binary file, store
-        // in downloads and send to the API
+        // If PDR stop is pressed or 10 minutes elapse, package up data packet,
+        // write to a local binary file, store in downloads and send to the API
         if (!(Globalpdrrunning) || ((timesincestart) > 240000 * count)) {
             if((timesincestart > 240000 * count)) {
                 oldStepCount = GlobalStrideCount;
@@ -229,7 +294,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
             }
 
             // Indicate upload of trajectory has begun
-            Toast.makeText(getContext(), "Upload trajectory started", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Upload trajectory started", Toast.LENGTH_SHORT).
+                    show();
             // Begin asynchronous task to upload data. This means data can upload in the background
             // without interrupting the PDR or other app tasks.
             MyAsyncTask task = new MyAsyncTask(currentBinaryPath, getContext());
@@ -252,6 +318,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
                     .addPdrData(pdrsample);
         }
     }
+
+    /***************** Sensor data *************************/
 
     // Set latest Wifi sample data and write it into current trajectory packet
     public void setwifiData(long macaddress, int rssi, int i, int scanlistsize) {
@@ -290,7 +358,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     }
 
     // Set latest location sample data and write it into current trajectory packet
-    public void setLocation(double latitude, double longitude, double altitude, double accuracy, double speed, String provider) {
+    public void setLocation(double latitude, double longitude, double altitude, double accuracy,
+                            double speed, String provider) {
         if(Globalpdrrunning) {
             gnsssample
                     .setRelativeTimestamp(System.currentTimeMillis()-Globalstarttime)
@@ -347,7 +416,10 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     public void setRotationVector(float[] rotationvectorValues, long vecTimestamp) {
         if(Globalpdrrunning) {
             motionsample
-                    .setRotationVectorX(rotationvectorValues[0]).setRotationVectorY(rotationvectorValues[1]).setRotationVectorZ(rotationvectorValues[2]).setRotationVectorW(rotationvectorValues[3]);
+                    .setRotationVectorX(rotationvectorValues[0])
+                    .setRotationVectorY(rotationvectorValues[1])
+                    .setRotationVectorZ(rotationvectorValues[2])
+                    .setRotationVectorW(rotationvectorValues[3]);
             vectorrotationready = true;
             if(vectorrotationready & gyroscopeready & accelerometerready) {
                 motionsample
@@ -400,7 +472,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     }
 
     // Set accelerometer sensor info
-    public void setAccelerometerInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void setAccelerometerInfo(String name, String vendor, double resolution, double power,
+                                     float version, float type) {
         accelerometerinfo
                 .setName(name)
                 .setVendor(vendor)
@@ -412,7 +485,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     }
 
     // Set gyroscope sensor info
-    public void setGyroscopeInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void setGyroscopeInfo(String name, String vendor, double resolution, double power,
+                                 float version, float type) {
         gyroscopeinfo
                 .setName(name)
                 .setVendor(vendor)
@@ -424,7 +498,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     }
 
     // Set rotation vector sensor info
-    public void setRotationVectorInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void setRotationVectorInfo(String name, String vendor, double resolution, double power,
+                                      float version, float type) {
         rotationvectorinfo
                 .setName(name)
                 .setVendor(vendor)
@@ -436,7 +511,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     }
 
     // Set magnetometer sensor info
-    public void setMagnetometerInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void setMagnetometerInfo(String name, String vendor, double resolution, double power,
+                                    float version, float type) {
         magnetometerinfo
                 .setName(name)
                 .setVendor(vendor)
@@ -448,7 +524,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     }
 
     // Set barometer sensor info
-    public void setBarometerInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void setBarometerInfo(String name, String vendor, double resolution, double power,
+                                 float version, float type) {
         barometerinfo
                 .setName(name)
                 .setVendor(vendor)
@@ -460,7 +537,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
     }
 
     // Set light sensor info
-    public void setLightSensorInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void setLightSensorInfo(String name, String vendor, double resolution, double power,
+                                   float version, float type) {
         lightsensorinfo
                 .setName(name)
                 .setVendor(vendor)
@@ -471,68 +549,28 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
                 .build();
     }
 
+    /***************** Binary file creation *************************/
+
     String currentBinaryPath;
     String imageFileName;
-    // Function to create local binary file in phone directory that we write binary trajectory data packet to.
+    // Creates local binary file in phone directory that we write binary trajectory data packet to.
     private File createBinaryFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("_ddMMyy_HHmmss").format(new Date());
         imageFileName = "Trajectory_" + GlobalBuilding + timeStamp;
-        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File trajectory = new File(storageDir + "/" + File.separator + imageFileName + ".bin");
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.
+                DIRECTORY_DOWNLOADS);
+        File trajectory = new File(storageDir + "/" + File.separator + imageFileName +
+                ".bin");
         trajectory.createNewFile();
         // Save a file: path for use with ACTION_VIEW intents
         currentBinaryPath = trajectory.getAbsolutePath();
         return trajectory;
     }
 
-    // Function when upload button is pressed for data file in list view
-    @Override
-    public void onUploadClick(int position) {
-        Log.d(TAG, "onUploadClick: upload button is clicked");
-        // Refresh the data file list view
-        refreshListView();
-        currentBinaryPath = fileList.get(position).getAbsolutePath();
-        MyAsyncTask task = new MyAsyncTask(currentBinaryPath, getContext());
-        task.execute();
-    }
-
-    //Delete and load function to process trajectory data set
-    @Override
-    public void onDeleteClick(int position) {
-        Log.d(TAG, "onDeleteClick: delete button is clicked");
-        // Refresh the data file list view
-        refreshListView();
-        if(position>=0 && position<myTrajectoryNum.size()){
-            myTrajectoryNum.remove(position);
-            trajectorySwipeAdaptor.notifyItemRemoved(position);
-            trajectorySwipeAdaptor.notifyItemRangeChanged(position, myTrajectoryNum.size());
-        }
-        // Delete appropriate file that was clicked
-        fileList.get(position).delete();
-        // Refresh again
-        refreshListView();
-    }
-
-    @Override
-    public void onLoadClick(int position) {
-        Log.d(TAG, "load button is clicked");
-        try {
-            // Refresh data file list
-            refreshListView();
-            String filename = fileList.get(position).getName();
-            Path path = Paths.get(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + filename);
-            byte[] data = Files.readAllBytes(path);
-            Traj.Trajectory displaytraj = Traj.Trajectory.parseFrom(data);
-            String display = displaytraj.toString();
-            binaryFileToString.setText(display.substring(0,100000) + "..."); // get string data
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    /***************** Refresh the list view *************************/
 
     public void refreshListView() {
-
         myTrajectoryNum.clear();
         myTrajectoryLocation.clear();
         myTrajectoryTimestamp.clear();
@@ -548,7 +586,8 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
                 if (file[i].getName().contains("Trajectory")) {
                     fileList.add(file[i]);
                     //String[] naming = file[i].getName().split("_");
-                    createList(trajectoryNum, "string", 0, 0, fileList.get(j).getName());
+                    createList(trajectoryNum, "string", 0, 0,
+                            fileList.get(j).getName());
                     trajectoryNum++;
                     j++;
                 }
@@ -558,12 +597,16 @@ public class task3api extends Fragment implements swipeAdaptor.OnBtnDeleteClickL
 
 }
 
+/***************** Background upload task *************************/
+
 // Asynchronous background task responsible for uploading data to the cloud.
 class MyAsyncTask extends AsyncTask<Void, Void, Void> {
-
     String currentBinaryPath; // string storing path to current binary file to upload
     Context context;
-    int responseCode; // response code fed back from http connection (200 is successful, 400 indicates invalid, 422 indicates error with connection)
+
+    // response code fed back from http connection
+    // (200 is successful, 400 indicates invalid, 422 indicates error with connection)
+    int responseCode;
 
     public MyAsyncTask(String data, Context context) {
         this.currentBinaryPath = data;
@@ -580,14 +623,16 @@ class MyAsyncTask extends AsyncTask<Void, Void, Void> {
             conn.setRequestMethod("POST"); // POST request
             conn.setRequestProperty("accept", "application/json"); // Set accept
             String boundary = Long.toHexString(System.currentTimeMillis());
-            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary); // Set content type
+            // Set content type
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             // Write the file contents to the request body
-            File file = new File(currentBinaryPath.toString()); // Feed current binary path into a file
+            File file = new File(currentBinaryPath.toString()); // Feed current binary path to file
             // Create output stream with data from that file.
             try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(file));
                  OutputStream os = conn.getOutputStream()) {
                 os.write(("--" + boundary + "\r\n").getBytes());
-                os.write(("Content-Disposition: form-data; name=\"file\"; filename=\"" + file.getName() + "\"\r\n").getBytes());
+                os.write(("Content-Disposition: form-data; name=\"file\"; filename=\"" +
+                        file.getName() + "\"\r\n").getBytes());
                 os.write(("Content-Type: application/octet-stream\r\n\r\n").getBytes());
 
                 byte[] buffer = new byte[4096];
@@ -608,7 +653,7 @@ class MyAsyncTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        // Send feedback message to user indicating whether upload was successful or if there was an error.
+        // Send feedback message to user indicating upload was successful or there was an error.
         if(responseCode == 200) {
             Toast.makeText(context, "Upload Trajectory Completed", Toast.LENGTH_SHORT).show();
         } else if(responseCode == 400) {

@@ -3,26 +3,29 @@ package com.example.a2_integration;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.Gravity;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Toast;
-import android.widget.ToggleButton;
-
 import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity implements task1sensors.SensorsListener, task2pdr.SensorsListener {
+/** This activity integrates
+ *  Author: Thomas Harley
+ *
+ *  Features:
+ *  - Modular hierarchy including three fragments.
+ *  - Navigation bar to move between fragments.
+ *  - Handles data sharing between fragments.
+ */
+
+public class MainActivity extends AppCompatActivity implements task1sensors.SensorsListener,
+        task2pdr.SensorsListener {
+    /************************** Declarations ***************************/
 
     FragmentManager fragmentManager; // Declare manager
 
@@ -37,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
     public ActionBarDrawerToggle actionBarDrawerToggle;
 
     String title; // Used to change title at top of app
+
+    /************************** onCreate ***************************/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,14 +60,30 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         initialiseFragments(); // initialises all the fragments and shows default (compass)
     }
 
-    private void handlingNavBar() {
+    /************************** onPause ***************************/
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    /************************** onResume ***************************/
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    /************************** Navigation bar initialisation ***************************/
+
+    private void handlingNavBar() {
         // The drawer layout toggles menu icon to open drawer and back button to close drawer
         drawerLayout = findViewById(R.id.my_drawer_layout);
         drawerLayout.openDrawer(Gravity.LEFT);
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open,
+                R.string.nav_close);
 
-        // Passes the Open and Close toggle for the drawer layout listener to toggle the button state
+        // Passes the Open and Close toggle for the drawer layout listener to toggle the button
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
@@ -97,10 +118,8 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         });
     }
 
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         // When menu/back button is pressed
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
@@ -108,8 +127,9 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         return super.onOptionsItemSelected(item);
     }
 
-    private void initialiseFragments() {
+    /************************** Fragment initialisation ***************************/
 
+    private void initialiseFragments() {
         fragmentManager = getSupportFragmentManager();
 
         // Initialise fragments and add them to flcontent frame layout declared in activity_main.xml
@@ -125,21 +145,11 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         currentfragment = sensorsfragment;
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
+    /************************** Listeners from task1sensors Fragment ***************************/
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    // **********************************************//
-    // Listeners from Task 1 Fragment
-
-    @Override
-    public void LocationData(double tlat, double tlong, double altitude, double accuracy, double speed, String provider) {
+    public void LocationData(double tlat, double tlong, double altitude, double accuracy,
+                             double speed, String provider) {
         task3api apidata = (task3api) apifragment;
         apidata.setLocation(tlat, tlong, altitude, accuracy, speed, provider);
     }
@@ -211,37 +221,43 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
     }
 
     @Override
-    public void AccelerometerInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void AccelerometerInfo(String name, String vendor, double resolution, double power,
+                                  float version, float type) {
         task3api apidata = (task3api) apifragment;
         apidata.setAccelerometerInfo(name, vendor, resolution, power, version, type);
     }
 
     @Override
-    public void GyroscopeInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void GyroscopeInfo(String name, String vendor, double resolution, double power,
+                              float version, float type) {
         task3api apidata = (task3api) apifragment;
         apidata.setGyroscopeInfo(name, vendor, resolution, power, version, type);
     }
 
     @Override
-    public void RotationVectorInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void RotationVectorInfo(String name, String vendor, double resolution, double power,
+                                   float version, float type) {
         task3api apidata = (task3api) apifragment;
         apidata.setRotationVectorInfo(name, vendor, resolution, power, version, type);
     }
 
     @Override
-    public void MagnetometerInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void MagnetometerInfo(String name, String vendor, double resolution, double power,
+                                 float version, float type) {
         task3api apidata = (task3api) apifragment;
         apidata.setMagnetometerInfo(name, vendor, resolution, power, version, type);
     }
 
     @Override
-    public void BarometerInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void BarometerInfo(String name, String vendor, double resolution, double power,
+                              float version, float type) {
         task3api apidata = (task3api) apifragment;
         apidata.setBarometerInfo(name, vendor, resolution, power, version, type);
     }
 
     @Override
-    public void LightSensorInfo(String name, String vendor, double resolution, double power, float version, float type) {
+    public void LightSensorInfo(String name, String vendor, double resolution, double power,
+                                float version, float type) {
         task3api apidata = (task3api) apifragment;
         apidata.setLightSensorInfo(name, vendor, resolution, power, version, type);
     }
@@ -258,11 +274,11 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         apidata.setAccessPointData(mac, ssid, frequency);
     }
 
-    // **********************************************//
-    // Listeners from Task 2 Fragment
+    /************************** Listeners from task2pdr Fragment ***************************/
 
     @Override
-    public void PDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building, long currenttime) {
+    public void PDRStatus(boolean pdrrunning, long starttime, long stoptime, byte building,
+                          long currenttime) {
         task3api apidata = (task3api) apifragment;
         apidata.setPDRStatus(pdrrunning, starttime,stoptime,building,currenttime);
     }
@@ -272,8 +288,4 @@ public class MainActivity extends AppCompatActivity implements task1sensors.Sens
         task3api apidata = (task3api) apifragment;
         apidata.setPDRData(positionx, positiony, strideCount);
     }
-
-
-
-
 }
