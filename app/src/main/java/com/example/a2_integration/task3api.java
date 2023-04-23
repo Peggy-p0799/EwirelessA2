@@ -37,7 +37,7 @@ import java.util.List;
  *
  *  Fundamental Features include:
  *  - Collect all data inform as required
- *  - Automatically upload trajectory to the cloud every 10 minutes (?? may be not that accurate
+ *  - Automatically upload trajectory to the cloud every 10 minutes
  *
  *  Extra Features include:
  *  - segment the trajectories into 10 min sections and prepare them for sending.
